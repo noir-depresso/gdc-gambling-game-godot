@@ -1,0 +1,72 @@
+{
+	"enemies": [
+		{
+			"id": "street_enforcer",
+			"name": "Street Enforcer",
+			"max_health": 110,
+			"actions": [
+				{
+					"id": "strike",
+					"label": "Strike",
+					"description": "A direct attack.",
+					"base_weight": 4.0,
+					"effects": [
+						{"operation": "damage", "amount": 12}
+					]
+				},
+				{
+					"id": "heavy_strike",
+					"label": "Heavy Strike",
+					"description": "A slower but nastier hit.",
+					"base_weight": 2.0,
+					"conditions": {
+						"min_round": 2,
+						"weight_if_round_high": 1.5,
+						"round_threshold": 3
+					},
+					"effects": [
+						{"operation": "damage", "amount": 24}
+					]
+				},
+				{
+					"id": "brace",
+					"label": "Brace",
+					"description": "Prepare for the next hit.",
+					"base_weight": 1.5,
+					"conditions": {
+						"player_bits_above": 90
+					},
+					"effects": [
+						{"operation": "defend", "ratio": 0.5}
+					]
+				},
+				{
+					"id": "second_wind",
+					"label": "Second Wind",
+					"description": "Recover some health.",
+					"base_weight": 1.0,
+					"conditions": {
+						"enemy_hp_below": 0.5,
+						"weight_if_enemy_low": 2.0
+					},
+					"effects": [
+						{"operation": "heal", "amount": 10}
+					]
+				},
+				{
+					"id": "pressure_fire",
+					"label": "Pressure Fire",
+					"description": "Power up and unload.",
+					"base_weight": 1.0,
+					"conditions": {
+						"min_round": 3
+					},
+					"effects": [
+						{"operation": "attack_buff", "amount": 0.25},
+						{"operation": "damage", "amount": 18}
+					]
+				}
+			]
+		}
+	]
+}

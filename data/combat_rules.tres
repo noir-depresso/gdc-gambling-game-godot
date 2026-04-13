@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CombatRulesResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://ScriptsCs/CombatRulesResource.cs" id="1_v1xqb"]
+
+[resource]
+script = ExtResource("1_v1xqb")
+StartingBits = 100
+BasicIncome = 10
+CardsDrawnPerRound = 1
+PlayerStartingHp = 100
+EnemyStartingHp = 100
+StockVolatilityMin = -0.1
+StockVolatilityMax = 0.2
+BuyLowStackCap = 2
+SellHighStackCap = 2

@@ -1,0 +1,10 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+.dotnet/
+.nuget/
+bin/
+obj/
+.vs/
+.vscode/
+.codex/

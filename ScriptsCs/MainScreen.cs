@@ -1,0 +1,85 @@
+#nullable enable
+using Godot;
+
+namespace GodotGdc.V1;
+
+public partial class MainScreen : Control
+{
+    private readonly PackedScene _deckBuilderScene = ResourceLoader.Load<PackedScene>("res://scenes/deck_builder_screen.tscn");
+    private readonly PackedScene _combatScene = ResourceLoader.Load<PackedScene>("res://scenes/combat_screen.tscn");
+
+    private AppSession _session = null!;
+    private Control? _activeScreen;
+
+    public override void _Ready()
+    {
+        SetAnchorsPreset(LayoutPreset.FullRect);
+
+        var content = new ContentLibrary();
+        content.LoadAll();
+        var storage = new DeckStorage();
+        var rules = ResourceLoader.Load<CombatRulesResource>("res://data/combat_rules.tres");
+        var decks = storage.LoadDecks(content.DefaultDeck);
+        if (decks.Count == 0)
+        {
+            decks.Add(content.DefaultDeck.Copy());
+        }
+
+        _session = new AppSession
+        {
+            Content = content,
+            Storage = storage,
+            Rules = rules,
+            SavedDecks = decks,
+            CurrentDeck = decks[0].Copy(),
+            UiScale = 1.0f,
+            AccentColor = new Color(0.32f, 0.82f, 0.47f),
+            HackerMode = false
+        };
+
+        Theme = UiStyles.GetTheme(UiStyles.BuildPalette(_session.AccentColor, _session.HackerMode));
+        UiStyles.ApplyWindowScale(GetWindow(), _session.UiScale);
+        ShowDeckBuilder();
+    }
+
+    private void ShowDeckBuilder()
+    {
+        ClearActiveScreen();
+        var screen = _deckBuilderScene.Instantiate<DeckBuilderScreen>();
+        screen.Initialize(_session);
+        screen.StartCombatRequested += OnStartCombatRequested;
+        AddChild(screen);
+        _activeScreen = screen;
+    }
+
+    private void ShowCombat()
+    {
+        ClearActiveScreen();
+        var screen = _combatScene.Instantiate<CombatScreen>();
+        screen.Initialize(_session);
+        screen.BackToDeckBuilderRequested += OnBackToDeckBuilderRequested;
+        AddChild(screen);
+        _activeScreen = screen;
+    }
+
+    private void ClearActiveScreen()
+    {
+        if (_activeScreen == null)
+        {
+            return;
+        }
+
+        _activeScreen.QueueFree();
+        _activeScreen = null;
+    }
+
+    private void OnStartCombatRequested()
+    {
+        ShowCombat();
+    }
+
+    private void OnBackToDeckBuilderRequested()
+    {
+        ShowDeckBuilder();
+    }
+}
