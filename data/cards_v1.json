@@ -1,0 +1,268 @@
+{
+	"cards": [
+		{
+			"id": "bank_account",
+			"name": "Bank Account",
+			"type": "investment",
+			"cost_bits": 25,
+			"description": "Increase bits income by 5% every round. Stacks.",
+			"tags": ["investment"],
+			"effects": [
+				{"trigger": "on_play", "operation": "modify_bits_income_mult", "target": "self", "params": {"stack_key": "bank"}}
+			]
+		},
+		{
+			"id": "crypto",
+			"name": "Crypto",
+			"type": "investment",
+			"cost_bits": 100,
+			"description": "Next round gains 50% of last round's income again.",
+			"tags": ["investment", "variance"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "self", "params": {"id": "crypto", "carry_percent": 0.5}}
+			]
+		},
+		{
+			"id": "stocks_and_bonds",
+			"name": "Stocks and Bonds",
+			"type": "investment",
+			"cost_bits": 50,
+			"description": "Add one stock stack. Each stack rolls volatility every round.",
+			"tags": ["investment", "variance"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "self", "params": {"id": "stocks"}}
+			]
+		},
+		{
+			"id": "buy_low",
+			"name": "Buy Low",
+			"type": "investment",
+			"cost_bits": 150,
+			"description": "Reduce future card costs by 20% per stack, up to 2 stacks.",
+			"tags": ["investment"],
+			"effects": [
+				{"trigger": "on_play", "operation": "modify_cost", "target": "self", "params": {"amount_per_stack": 0.2}}
+			]
+		},
+		{
+			"id": "sell_high",
+			"name": "Sell High",
+			"type": "investment",
+			"cost_bits": 75,
+			"description": "Increase bits income by 25% every round, up to 2 stacks.",
+			"tags": ["investment"],
+			"effects": [
+				{"trigger": "on_play", "operation": "modify_bits_income_mult", "target": "self", "params": {"stack_key": "sell"}}
+			]
+		},
+		{
+			"id": "real_estate",
+			"name": "Real Estate",
+			"type": "investment",
+			"cost_bits": 50,
+			"description": "Raise base income by a random amount.",
+			"tags": ["investment", "variance"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "self", "params": {"id": "real_estate", "min": 2, "max": 8}}
+			]
+		},
+		{
+			"id": "therapy",
+			"name": "Therapy",
+			"type": "medicate",
+			"cost_bits": 50,
+			"description": "Heal 10 health.",
+			"tags": ["medicate"],
+			"effects": [
+				{"trigger": "on_play", "operation": "heal", "target": "self", "params": {"amount": 10}}
+			]
+		},
+		{
+			"id": "neural_networking",
+			"name": "Neural-networking",
+			"type": "medicate",
+			"cost_bits": 100,
+			"description": "Heal 30 health.",
+			"tags": ["medicate"],
+			"effects": [
+				{"trigger": "on_play", "operation": "heal", "target": "self", "params": {"amount": 30}}
+			]
+		},
+		{
+			"id": "hedging",
+			"name": "Hedging",
+			"type": "medicate",
+			"cost_bits": 75,
+			"description": "Block 75% of the next attack, but next income is reduced by 50%.",
+			"tags": ["medicate", "investment"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "self", "params": {"id": "hedging", "block": 0.75, "income_penalty": 0.5}}
+			]
+		},
+		{
+			"id": "chaos",
+			"name": "Chaos",
+			"type": "medicate",
+			"cost_bits": 50,
+			"description": "Discard your hand and draw the same number of cards.",
+			"tags": ["medicate", "variance"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "self", "params": {"id": "chaos"}}
+			]
+		},
+		{
+			"id": "guard_down",
+			"name": "Guard Down",
+			"type": "medicate",
+			"cost_bits": 75,
+			"description": "Reduce the next enemy attack by 30%.",
+			"tags": ["medicate"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "enemy", "params": {"id": "guard_down", "amount": 0.3}}
+			]
+		},
+		{
+			"id": "enchantment",
+			"name": "Enchantment",
+			"type": "medicate",
+			"cost_bits": 100,
+			"description": "Gain 30% more damage on your next turn.",
+			"tags": ["medicate"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "self", "params": {"id": "enchantment", "amount": 0.3}}
+			]
+		},
+		{
+			"id": "raan",
+			"name": "Raan",
+			"type": "medicate",
+			"cost_bits": 50,
+			"description": "In 2 to 3 turns, draw an extra card.",
+			"tags": ["medicate", "variance"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "self", "params": {"id": "raan", "amount": 1}}
+			]
+		},
+		{
+			"id": "firewall",
+			"name": "Firewall",
+			"type": "medicate",
+			"cost_bits": 100,
+			"description": "Reflect 25% of the next enemy damage back at them.",
+			"tags": ["medicate", "reactive"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "self", "params": {"id": "firewall", "amount": 0.25}}
+			]
+		},
+		{
+			"id": "suture_kit",
+			"name": "Suture Kit",
+			"type": "medicate",
+			"cost_bits": 100,
+			"description": "Heal 25 health and nearly ignore the next enemy hit.",
+			"tags": ["medicate"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "self", "params": {"id": "suture_kit", "heal": 25, "block": 0.95}}
+			]
+		},
+		{
+			"id": "release_the_files",
+			"name": "Release the Files",
+			"type": "medicate",
+			"cost_bits": 100,
+			"description": "If you are at 20% health or lower, gain double damage next turn.",
+			"tags": ["medicate", "bruiser"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "self", "params": {"id": "release_files", "hp_threshold": 0.2, "amount": 1.0}}
+			]
+		},
+		{
+			"id": "the_wire",
+			"name": "The Wire",
+			"type": "bruiser",
+			"cost_bits": 50,
+			"description": "Deal 10 damage.",
+			"tags": ["bruiser"],
+			"effects": [
+				{"trigger": "on_play", "operation": "damage", "target": "enemy", "params": {"amount": 10}}
+			]
+		},
+		{
+			"id": "trojan_malware",
+			"name": "Trojan Malware",
+			"type": "bruiser",
+			"cost_bits": 100,
+			"description": "Deal 35 damage.",
+			"tags": ["bruiser"],
+			"effects": [
+				{"trigger": "on_play", "operation": "damage", "target": "enemy", "params": {"amount": 35}}
+			]
+		},
+		{
+			"id": "social_pressure",
+			"name": "Social Pressure",
+			"type": "bruiser",
+			"cost_bits": 50,
+			"description": "Deal 10 damage plus 10 more for each prior Social Pressure you played this combat.",
+			"tags": ["bruiser"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "enemy", "params": {"id": "social_pressure", "base": 10, "per_stack": 10}}
+			]
+		},
+		{
+			"id": "expose",
+			"name": "Expose",
+			"type": "bruiser",
+			"cost_bits": 75,
+			"description": "Sacrifice another card in hand to deal 75 damage.",
+			"tags": ["bruiser"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "enemy", "params": {"id": "expose", "amount": 75}}
+			]
+		},
+		{
+			"id": "hired_gun",
+			"name": "Hired Gun",
+			"type": "bruiser",
+			"cost_bits": 150,
+			"description": "Deal 20 damage, then return this card to your hand.",
+			"tags": ["bruiser"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "enemy", "params": {"id": "hired_gun", "amount": 20}}
+			]
+		},
+		{
+			"id": "trauma_team",
+			"name": "Trauma Team",
+			"type": "bruiser",
+			"cost_bits": 125,
+			"description": "If the enemy attacks next turn, deal 50 back. Otherwise heal 15.",
+			"tags": ["bruiser", "medicate"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "enemy", "params": {"id": "trauma_team", "damage": 50, "heal": 15}}
+			]
+		},
+		{
+			"id": "coin_flip",
+			"name": "Coin Flip",
+			"type": "bruiser",
+			"cost_bits": 75,
+			"description": "Flip a coin. Heads deal double damage, tails deal half damage.",
+			"tags": ["bruiser", "variance"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "enemy", "params": {"id": "coin_flip", "amount": 20}}
+			]
+		},
+		{
+			"id": "roulette",
+			"name": "Roulette",
+			"type": "special",
+			"cost_bits": 50,
+			"description": "Randomly hurt yourself, heal, or blast the enemy.",
+			"tags": ["variance", "special"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "any", "params": {"id": "roulette", "self_damage": 12, "heal": 18, "enemy_damage": 30}}
+			]
+		}
+	]
+}
