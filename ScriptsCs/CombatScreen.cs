@@ -11,6 +11,7 @@ public partial class CombatScreen : Control
     private AppSession _session = null!;
     private CombatController _controller = null!;
     private UiStyles.Palette _palette = null!;
+    private PackedScene? _handCardScene;
 
     private ColorRect _background = null!;
     private Label _enemyNameLabel = null!;
@@ -43,10 +44,21 @@ public partial class CombatScreen : Control
     private ColorRect _overlay = null!;
     private PanelContainer _overlayPanel = null!;
     private VBoxContainer _overlayBody = null!;
+    private Label _overlayTitleLabel = null!;
+    private VBoxContainer _overlayContent = null!;
+    private Button _overlayCloseButton = null!;
     private System.Action? _overlayCloseAction;
+    private bool _uiBound;
 
     private readonly List<string> _logHistory = new();
+    private readonly RandomNumberGenerator _runRng = new();
     private int _pendingSecondarySource = -1;
+    private DeckDefinition _runDeck = new();
+    private List<string> _encounterIds = new();
+    private int _currentEncounterIndex;
+    private int _runStartingBitsBonus;
+    private int _runIncomeBonus;
+    private int _runVictories;
 
     public event System.Action? BackToDeckBuilderRequested;
 
@@ -58,36 +70,90 @@ public partial class CombatScreen : Control
     public override void _Ready()
     {
         SetAnchorsPreset(LayoutPreset.FullRect);
+        _runRng.Randomize();
         RebuildScreen(true);
     }
 
     private void RebuildScreen(bool createController)
     {
-        foreach (var child in GetChildren())
-        {
-            child.QueueFree();
-        }
-
         _palette = UiStyles.BuildPalette(_session.AccentColor, _session.HackerMode);
         Theme = UiStyles.GetTheme(_palette);
-        BuildUi();
+        BindSceneUi();
 
         if (createController)
         {
             _controller = new CombatController();
             _controller.Setup(_session.Content, _session.Rules);
-            _controller.SetActiveDeck(_session.CurrentDeck);
             _controller.SnapshotChanged += OnSnapshotChanged;
             _controller.LogAdded += AppendLog;
             _controller.CombatEnded += OnCombatEnded;
             _controller.CombatStarted += OnCombatStarted;
-            _controller.StartCombat();
+            InitializeRun();
+            StartCurrentEncounter();
         }
         else
         {
             RepaintLog();
             OnSnapshotChanged(_controller.GetSnapshot());
         }
+    }
+
+    private void BindSceneUi()
+    {
+        _background = GetNode<ColorRect>("%Background");
+        _enemyNameLabel = GetNode<Label>("%EnemyNameLabel");
+        _enemySubLabel = GetNode<Label>("%EnemySubLabel");
+        _turnHintLabel = GetNode<Label>("%TurnHintLabel");
+
+        _playerHpValue = GetNode<Label>("%PlayerHpValue");
+        _bitsValue = GetNode<Label>("%BitsValue");
+        _enemyHpValue = GetNode<Label>("%EnemyHpValue");
+        _roundValue = GetNode<Label>("%RoundValue");
+
+        _incomeValue = GetNode<Label>("%IncomeValue");
+        _drawPileValue = GetNode<Label>("%DrawPileValue");
+        _discardPileValue = GetNode<Label>("%DiscardPileValue");
+        _intentValue = GetNode<Label>("%IntentValue");
+        _statusValue = GetNode<Label>("%EncounterValue");
+
+        _economyBaseLabel = GetNode<Label>("%EconomyBaseValue");
+        _economyAddLabel = GetNode<Label>("%EconomyAddValue");
+        _economyMultLabel = GetNode<Label>("%EconomyMultValue");
+        _economyVolLabel = GetNode<Label>("%EconomyVolValue");
+        _economyGainLabel = GetNode<Label>("%EconomyGainValue");
+        _economyCostLabel = GetNode<Label>("%EconomyCostValue");
+
+        _handRow = GetNode<HBoxContainer>("%HandRow");
+        _logOutput = GetNode<RichTextLabel>("%LogOutput");
+        _endTurnButton = GetNode<Button>("%EndTurnButton");
+        _viewDeckButton = GetNode<Button>("%ViewDeckButton");
+
+        _overlay = GetNode<ColorRect>("%Overlay");
+        _overlayPanel = GetNode<PanelContainer>("%OverlayPanel");
+        _overlayTitleLabel = GetNode<Label>("%OverlayTitleLabel");
+        _overlayContent = GetNode<VBoxContainer>("%OverlayContent");
+        _overlayCloseButton = GetNode<Button>("%OverlayCloseButton");
+
+        _background.Color = Colors.Black;
+        _overlay.Color = new Color(0, 0, 0, 0.86f);
+        _overlay.Visible = false;
+        _overlayPanel.Visible = false;
+
+        if (_uiBound)
+        {
+            return;
+        }
+
+        _uiBound = true;
+
+        _viewDeckButton.Pressed += () => ShowRemainingDeck(HideOverlay);
+        GetNode<Button>("%MenuButton").Pressed += ShowMainMenu;
+        _endTurnButton.Pressed += () =>
+        {
+            _pendingSecondarySource = -1;
+            _controller.EndPlayerTurn();
+        };
+        _overlayCloseButton.Pressed += HandleOverlayClose;
     }
 
     private void BuildUi()
@@ -152,7 +218,7 @@ public partial class CombatScreen : Control
         CreateSecondaryStatCard(infoRow, "Draw Pile", out _drawPileValue);
         CreateSecondaryStatCard(infoRow, "Discard", out _discardPileValue);
         CreateSecondaryStatCard(infoRow, "Enemy Intent", out _intentValue);
-        CreateSecondaryStatCard(infoRow, "Combat Status", out _statusValue);
+        CreateSecondaryStatCard(infoRow, "Encounter", out _statusValue);
 
         var guidePanel = UiStyles.MakeSurface("Turn Guide", _palette);
         root.AddChild(guidePanel);
@@ -324,6 +390,42 @@ public partial class CombatScreen : Control
         _overlayPanel.AddChild(_overlayBody);
     }
 
+    private void InitializeRun()
+    {
+        _runDeck = _session.CurrentDeck.Copy();
+        _encounterIds = BuildEncounterSequence();
+        _currentEncounterIndex = 0;
+        _runStartingBitsBonus = 0;
+        _runIncomeBonus = 0;
+        _runVictories = 0;
+        _pendingSecondarySource = -1;
+    }
+
+    private List<string> BuildEncounterSequence()
+    {
+        return new List<string>
+        {
+            "street_enforcer",
+            "signal_ghost",
+            "district_overseer"
+        };
+    }
+
+    private void StartCurrentEncounter()
+    {
+        if (_currentEncounterIndex < 0 || _currentEncounterIndex >= _encounterIds.Count)
+        {
+            return;
+        }
+
+        HideOverlay();
+        _pendingSecondarySource = -1;
+        _controller.SetActiveDeck(_runDeck);
+        _controller.SetActiveEnemy(_encounterIds[_currentEncounterIndex]);
+        _controller.ConfigureRunBonuses(_runStartingBitsBonus, _runIncomeBonus);
+        _controller.StartCombat();
+    }
+
     private void OnCombatStarted()
     {
         _logHistory.Clear();
@@ -333,9 +435,10 @@ public partial class CombatScreen : Control
     private void OnSnapshotChanged(CombatSnapshot snapshot)
     {
         _enemyNameLabel.Text = snapshot.EnemyName;
+        var encounterText = $"Fight {_currentEncounterIndex + 1}/{Mathf.Max(1, _encounterIds.Count)}";
         _enemySubLabel.Text = snapshot.PlayerTurnActive
-            ? "Your turn is live. Spend bits, build tempo, and decide whether to hold or commit."
-            : "Enemy phase is resolving. Watch the intent and prepare for the next upkeep.";
+            ? $"{encounterText}. Next intent: {snapshot.EnemyIntentLabel}. {snapshot.EnemyIntentDescription}"
+            : $"{encounterText}. Enemy phase is resolving.";
 
         _playerHpValue.Text = snapshot.PlayerHp.ToString();
         _bitsValue.Text = snapshot.PlayerBits.ToString();
@@ -345,8 +448,8 @@ public partial class CombatScreen : Control
         _incomeValue.Text = $"+{snapshot.CurrentTurnIncome}";
         _drawPileValue.Text = snapshot.DrawPileCount.ToString();
         _discardPileValue.Text = snapshot.DiscardPileCount.ToString();
-        _intentValue.Text = snapshot.LastEnemyAction;
-        _statusValue.Text = snapshot.CombatActive ? (snapshot.PlayerTurnActive ? "PLAYER" : "ENEMY") : "ENDED";
+        _intentValue.Text = snapshot.EnemyIntentLabel;
+        _statusValue.Text = $"{_currentEncounterIndex + 1}/{Mathf.Max(1, _encounterIds.Count)}";
 
         _turnHintLabel.Text = _pendingSecondarySource >= 0
             ? "Choose the second card to sacrifice and finish this play."
@@ -375,82 +478,61 @@ public partial class CombatScreen : Control
 
         foreach (var card in snapshot.Hand)
         {
-            var borderColor = card.Index == _pendingSecondarySource
-                ? _palette.Highlight
-                : _palette.AccentDark.Lightened(0.28f);
-            var backgroundColor = card.Index == _pendingSecondarySource
-                ? _palette.SurfaceSoft
-                : _palette.Surface;
+            _handCardScene ??= ResourceLoader.Load<PackedScene>("res://scenes/hand_card_view.tscn");
+            var cardView = _handCardScene.Instantiate<Control>();
+            cardView.CustomMinimumSize = new Vector2(164, 124);
+            _handRow.AddChild(cardView);
 
-            var panel = new PanelContainer
+            if (cardView is PanelContainer cardPanel)
             {
-                CustomMinimumSize = new Vector2(218, 208)
-            };
-            panel.AddThemeStyleboxOverride("panel", _palette.HackerMode
-                ? UiStyles.MakeFlatBox(new Color(0, 0, 0, 0), 0, new Color(0, 0, 0, 0), 0)
-                : UiStyles.MakeFlatBox(backgroundColor, 14, borderColor, 2));
-            _handRow.AddChild(panel);
+                var panelColor = card.Index == _pendingSecondarySource ? _palette.SurfaceSoft : _palette.Surface;
+                var borderColor = card.Index == _pendingSecondarySource ? _palette.Highlight : _palette.AccentDark.Lightened(0.28f);
+                cardPanel.AddThemeStyleboxOverride("panel", UiStyles.MakeFlatBox(panelColor, 10, borderColor, 2));
+            }
 
-            var body = new VBoxContainer();
-            body.SizeFlagsVertical = SizeFlags.ExpandFill;
-            body.AddThemeConstantOverride("separation", 8);
-            panel.AddChild(body);
+            var nameLabel = cardView.GetNode<Label>("%CardNameLabel");
+            nameLabel.Text = card.Name;
+            nameLabel.AddThemeFontSizeOverride("font_size", 24);
+            nameLabel.AddThemeColorOverride("font_color", _palette.TextStrong);
 
-            var titleRow = new HBoxContainer();
-            titleRow.AddThemeConstantOverride("separation", 8);
-            body.AddChild(titleRow);
+            var typeLabel = cardView.GetNode<Label>("%CardTypeLabel");
+            typeLabel.Text = card.Type.ToUpperInvariant();
+            typeLabel.AddThemeFontSizeOverride("font_size", 13);
+            typeLabel.AddThemeColorOverride("font_color", _palette.TextMuted);
 
-            var titleBox = new VBoxContainer();
-            titleBox.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-            titleRow.AddChild(titleBox);
-            titleBox.AddChild(UiStyles.MakeHeading(card.Name, 24, _palette));
-            titleBox.AddChild(UiStyles.MakeSubtle(card.Type.ToUpperInvariant(), 13, _palette));
-
-            var costBadge = new PanelContainer
-            {
-                CustomMinimumSize = new Vector2(64, 40)
-            };
+            var costBadge = cardView.GetNode<PanelContainer>("%CostBadge");
             costBadge.AddThemeStyleboxOverride("panel", _palette.HackerMode
                 ? UiStyles.MakeFlatBox(new Color(0, 0, 0, 0), 0, new Color(0, 0, 0, 0), 0)
                 : UiStyles.MakeFlatBox(_palette.AccentSoft, 10, _palette.Accent.Lightened(0.15f), 1));
-            titleRow.AddChild(costBadge);
-            var costText = UiStyles.MakeMonoValue($"{card.Cost}b", 20, _palette);
+
+            var costText = cardView.GetNode<Label>("%CostLabel");
+            costText.Text = $"{card.Cost}b";
+            costText.AddThemeFontOverride("font", UiStyles.GetMonoFont());
+            costText.AddThemeFontSizeOverride("font_size", 20);
             costText.AddThemeColorOverride("font_color", _palette.TextStrong);
-            costBadge.AddChild(costText);
 
-            var description = new RichTextLabel
-            {
-                BbcodeEnabled = true,
-                FitContent = false,
-                ScrollActive = true,
-                SizeFlagsVertical = SizeFlags.ExpandFill,
-                CustomMinimumSize = new Vector2(0, 88),
-                Text = $"[font_size=17]{card.Description}[/font_size]"
-            };
-            body.AddChild(description);
+            var description = cardView.GetNode<RichTextLabel>("%CardDescription");
+            description.Text = $"[font_size=17]{card.Description}[/font_size]";
 
-            var footer = new VBoxContainer();
-            footer.AddThemeConstantOverride("separation", 6);
-            body.AddChild(footer);
-
-            if (card.RequiresSecondary)
-            {
-                footer.AddChild(UiStyles.MakeSubtle("Needs another card from hand to resolve.", 13, _palette));
-            }
-            else
-            {
-                footer.AddChild(UiStyles.MakeSubtle(card.Playable ? "Ready to play now." : "Not enough bits right now.", 13, _palette));
-            }
+            var hintLabel = cardView.GetNode<Label>("%CardHintLabel");
+            hintLabel.Text = card.RequiresSecondary
+                ? "Needs another card from hand to resolve."
+                : card.Playable ? "Ready to play now." : "Not enough bits right now.";
+            hintLabel.AddThemeFontSizeOverride("font_size", 13);
+            hintLabel.AddThemeColorOverride("font_color", _palette.TextMuted);
 
             var actionText = card.RequiresSecondary && _pendingSecondarySource < 0
                 ? "Choose + Sacrifice"
                 : _pendingSecondarySource >= 0 && card.Index == _pendingSecondarySource
                     ? "Selected"
                     : "Play Card";
-            var playButton = UiStyles.MakeAccentButton(actionText, _palette, card.Playable ? _palette.Accent : _palette.SurfaceSoft);
+            var playButton = cardView.GetNode<Button>("%PlayCardButton");
+            playButton.Text = actionText;
+            playButton.AddThemeStyleboxOverride("normal", UiStyles.MakeFlatBox(card.Playable ? _palette.Accent.Darkened(0.28f) : _palette.SurfaceSoft, 10, card.Playable ? _palette.Accent.Lightened(0.10f) : _palette.SurfaceSoft, 2));
+            playButton.AddThemeStyleboxOverride("hover", UiStyles.MakeFlatBox(card.Playable ? _palette.Accent.Darkened(0.10f) : _palette.SurfaceSoft, 10, card.Playable ? _palette.Accent.Lightened(0.22f) : _palette.SurfaceSoft, 2));
+            playButton.AddThemeStyleboxOverride("pressed", UiStyles.MakeFlatBox(card.Playable ? _palette.Accent.Darkened(0.40f) : _palette.SurfaceSoft, 10, card.Playable ? _palette.Accent.Darkened(0.15f) : _palette.SurfaceSoft, 2));
             playButton.Disabled = !card.Playable;
             playButton.Pressed += () => OnHandCardPressed(card.Index);
-            footer.AddChild(playButton);
         }
     }
 
@@ -492,7 +574,7 @@ public partial class CombatScreen : Control
         var body = new VBoxContainer();
         body.SizeFlagsVertical = SizeFlags.ExpandFill;
         body.AddThemeConstantOverride("separation", 12);
-        body.AddChild(UiStyles.MakeSubtle("Combat is effectively paused while this menu is open.", 16, _palette));
+        body.AddChild(UiStyles.MakeSubtle("Combat is effectively paused while this menu is open. Restart begins the whole V2 run again.", 16, _palette));
 
         var tutorialButton = new Button { Text = "Tutorial" };
         tutorialButton.Pressed += () => ShowDocument("How Combat Works", BuildTutorialText(), ShowMainMenu);
@@ -547,10 +629,8 @@ public partial class CombatScreen : Control
         var restartButton = new Button { Text = "Restart Combat" };
         restartButton.Pressed += () =>
         {
-            HideOverlay();
-            _pendingSecondarySource = -1;
-            _controller.SetActiveDeck(_session.CurrentDeck);
-            _controller.StartCombat();
+            InitializeRun();
+            StartCurrentEncounter();
         };
         actionRow.AddChild(restartButton);
 
@@ -641,20 +721,13 @@ public partial class CombatScreen : Control
     private void ShowOverlay(string title, Control content, System.Action? onClose)
     {
         _overlayCloseAction = onClose;
-        foreach (var child in _overlayBody.GetChildren())
+        foreach (var child in _overlayContent.GetChildren())
         {
             child.QueueFree();
         }
 
-        var header = new HBoxContainer();
-        header.AddThemeConstantOverride("separation", 10);
-        header.AddChild(UiStyles.MakeHeading(title, 30, _palette));
-        header.AddChild(new Control { SizeFlagsHorizontal = SizeFlags.ExpandFill });
-        var close = new Button { Text = "X", CustomMinimumSize = new Vector2(44, 40) };
-        close.Pressed += HandleOverlayClose;
-        header.AddChild(close);
-        _overlayBody.AddChild(header);
-        _overlayBody.AddChild(content);
+        _overlayTitleLabel.Text = title;
+        _overlayContent.AddChild(content);
 
         _overlay.Visible = true;
         _overlayPanel.Visible = true;
@@ -704,18 +777,32 @@ public partial class CombatScreen : Control
     private void OnCombatEnded(bool victory)
     {
         _pendingSecondarySource = -1;
-        _turnHintLabel.Text = victory
-            ? "Victory. You can inspect the deck, review cards, or restart from the menu."
-            : "Defeat. Open the menu to restart the fight or head back to the deck builder.";
+        if (victory)
+        {
+            _runVictories += 1;
+            if (_currentEncounterIndex >= _encounterIds.Count - 1)
+            {
+                _turnHintLabel.Text = "Run clear. Review your run summary or restart from the menu.";
+                ShowRunSummary(true);
+                return;
+            }
+
+            _turnHintLabel.Text = "Victory. Pick one bits-based reward, then move to the next fight.";
+            ShowRewardSelection();
+            return;
+        }
+
+        _turnHintLabel.Text = "Defeat. Review the run summary, restart the run, or head back to the deck builder.";
+        ShowRunSummary(false);
     }
 
     private string BuildTutorialText()
     {
-        return "[font_size=30][b]Combat Tutorial[/b][/font_size]\n\n" +
+        return "[font_size=30][b]V2 Combat Run Tutorial[/b][/font_size]\n\n" +
+               "[b]Run Flow[/b]\nA run is a short chain of fights. Win a fight, choose one reward, then carry that advantage into the next encounter.\n\n" +
                "[b]Round Flow[/b]\n1. Start-of-turn effects resolve.\n2. Bits income is calculated.\n3. You draw cards.\n4. You play cards from the hand row.\n5. You end the turn.\n6. The enemy acts.\n7. End-of-round effects resolve.\n\n" +
-               "[b]Bits Economy[/b]\nV1 only uses bits in combat. Income follows (B + A) x (1 + M + V). B is base income, A is flat bonus, M is multiplier bonus, and V is volatility from cards like Stocks and Bonds.\n\n" +
-               "[b]Card Roles[/b]\nBruiser cards pressure enemy HP. Medicate cards heal, block, or manipulate the enemy's next action. Investment cards trade immediate tempo for stronger future turns.\n\n" +
-               "[b]Important QoL[/b]\nInspect Deck shows the remaining draw pile and discard. If a card needs a second card, click it first, then pick the sacrifice target. The menu also lets you change UI scale and theme color without leaving the fight.";
+               "[b]Bits Economy[/b]\nV2 still uses only bits. Income follows (B + A) x (1 + M + V). Rewards can add starting bits for future fights or permanently raise base income for the run.\n\n" +
+               "[b]Intent + Rewards[/b]\nThe enemy intent box now shows the next action being telegraphed. After a win, rewards can add bits setup, increase run income, or draft a new card into the run deck.";
     }
 
     private string BuildCardReferenceText()
@@ -728,5 +815,134 @@ public partial class CombatScreen : Control
             builder.Append($"{card.Description}\n\n");
         }
         return builder.ToString();
+    }
+
+    private void ShowRewardSelection()
+    {
+        var rewards = GenerateRewardOptions();
+        var body = new VBoxContainer();
+        body.SizeFlagsVertical = SizeFlags.ExpandFill;
+        body.AddThemeConstantOverride("separation", 12);
+        body.AddChild(UiStyles.MakeSubtle("Choose one reward to carry into the next encounter.", 16, _palette));
+
+        foreach (var reward in rewards)
+        {
+            var rewardPanel = UiStyles.MakeSurface(reward.Title, _palette, true);
+            var rewardBody = (VBoxContainer)rewardPanel.GetChild(0);
+            rewardBody.AddChild(UiStyles.MakeSubtle(reward.Description, 15, _palette));
+            var chooseButton = UiStyles.MakeAccentButton("Take Reward", _palette, _palette.Accent);
+            chooseButton.Pressed += () =>
+            {
+                ApplyReward(reward);
+                _currentEncounterIndex += 1;
+                StartCurrentEncounter();
+            };
+            rewardBody.AddChild(chooseButton);
+            body.AddChild(rewardPanel);
+        }
+
+        ShowOverlay("Fight Reward", body, null);
+    }
+
+    private List<RunRewardOption> GenerateRewardOptions()
+    {
+        var rewards = new List<RunRewardOption>
+        {
+            new()
+            {
+                Kind = RunRewardKind.BitsBonus,
+                Title = "Bits Cache",
+                Description = $"+{20 + (_currentEncounterIndex * 10)} starting bits for the rest of this run.",
+                Amount = 20 + (_currentEncounterIndex * 10)
+            },
+            new()
+            {
+                Kind = RunRewardKind.IncomeBonus,
+                Title = "Income Spike",
+                Description = $"+{2 + _currentEncounterIndex} base income each round for the rest of this run.",
+                Amount = 2 + _currentEncounterIndex
+            }
+        };
+
+        var cardOffer = _session.Content.ListCards()
+            .OrderBy(_ => _runRng.Randi())
+            .FirstOrDefault(card => !_runDeck.CardIds.Contains(card.Id) || card.MaxCopies < 0 || _runDeck.CardIds.Count(id => id == card.Id) < card.MaxCopies);
+        if (cardOffer != null)
+        {
+            rewards.Add(new RunRewardOption
+            {
+                Kind = RunRewardKind.CardDraft,
+                Title = $"Draft: {cardOffer.Name}",
+                Description = $"Add {cardOffer.Name} to this run deck. Cost {cardOffer.CostBits}b.",
+                CardId = cardOffer.Id
+            });
+        }
+
+        return rewards;
+    }
+
+    private void ApplyReward(RunRewardOption reward)
+    {
+        switch (reward.Kind)
+        {
+            case RunRewardKind.BitsBonus:
+                _runStartingBitsBonus += reward.Amount;
+                break;
+            case RunRewardKind.IncomeBonus:
+                _runIncomeBonus += reward.Amount;
+                break;
+            case RunRewardKind.CardDraft:
+                if (!string.IsNullOrEmpty(reward.CardId))
+                {
+                    _runDeck.CardIds.Add(reward.CardId);
+                }
+                break;
+        }
+    }
+
+    private void ShowRunSummary(bool victory)
+    {
+        var summary = new StringBuilder();
+        summary.Append(victory ? "[font_size=30][b]Run Clear[/b][/font_size]\n\n" : "[font_size=30][b]Run Over[/b][/font_size]\n\n");
+        summary.Append($"Fights won: {_runVictories}/{_encounterIds.Count}\n");
+        summary.Append($"Starting bits bonus: {_runStartingBitsBonus}\n");
+        summary.Append($"Base income bonus: {_runIncomeBonus}\n");
+        summary.Append($"Run deck size: {_runDeck.CardIds.Count}\n");
+
+        var body = new VBoxContainer();
+        body.SizeFlagsVertical = SizeFlags.ExpandFill;
+        body.AddThemeConstantOverride("separation", 12);
+        body.AddChild(new RichTextLabel
+        {
+            BbcodeEnabled = true,
+            FitContent = false,
+            ScrollActive = true,
+            SizeFlagsVertical = SizeFlags.ExpandFill,
+            SelectionEnabled = true,
+            CustomMinimumSize = new Vector2(0, 220),
+            Text = summary.ToString()
+        });
+
+        var actionRow = new HBoxContainer();
+        actionRow.AddThemeConstantOverride("separation", 10);
+        body.AddChild(actionRow);
+
+        var restartButton = UiStyles.MakeAccentButton("Restart Run", _palette, _palette.Accent);
+        restartButton.Pressed += () =>
+        {
+            InitializeRun();
+            StartCurrentEncounter();
+        };
+        actionRow.AddChild(restartButton);
+
+        var deckBuilderButton = new Button { Text = "Back To Deck Builder" };
+        deckBuilderButton.Pressed += () =>
+        {
+            HideOverlay();
+            BackToDeckBuilderRequested?.Invoke();
+        };
+        actionRow.AddChild(deckBuilderButton);
+
+        ShowOverlay(victory ? "Run Clear" : "Run Over", body, null);
     }
 }

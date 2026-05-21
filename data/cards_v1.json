@@ -133,6 +133,50 @@
 			]
 		},
 		{
+			"id": "raan",
+			"name": "Raan",
+			"type": "medicate",
+			"cost_bits": 50,
+			"description": "In 2 to 3 turns, draw an extra card.",
+			"tags": ["medicate", "variance"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "self", "params": {"id": "raan", "amount": 1}}
+			]
+		},
+		{
+			"id": "firewall",
+			"name": "Firewall",
+			"type": "medicate",
+			"cost_bits": 100,
+			"description": "Reflect 25% of the next enemy damage back at them.",
+			"tags": ["medicate", "reactive"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "self", "params": {"id": "firewall", "amount": 0.25}}
+			]
+		},
+		{
+			"id": "suture_kit",
+			"name": "Suture Kit",
+			"type": "medicate",
+			"cost_bits": 100,
+			"description": "Heal 25 health and nearly ignore the next enemy hit.",
+			"tags": ["medicate"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "self", "params": {"id": "suture_kit", "heal": 25, "block": 0.95}}
+			]
+		},
+		{
+			"id": "release_the_files",
+			"name": "Release the Files",
+			"type": "medicate",
+			"cost_bits": 100,
+			"description": "If you are at 20% health or lower, gain double damage next turn.",
+			"tags": ["medicate", "bruiser"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "self", "params": {"id": "release_files", "hp_threshold": 0.2, "amount": 1.0}}
+			]
+		},
+		{
 			"id": "the_wire",
 			"name": "The Wire",
 			"type": "bruiser",
@@ -207,6 +251,17 @@
 			"tags": ["bruiser", "variance"],
 			"effects": [
 				{"trigger": "on_play", "operation": "custom", "target": "enemy", "params": {"id": "coin_flip", "amount": 20}}
+			]
+		},
+		{
+			"id": "roulette",
+			"name": "Roulette",
+			"type": "special",
+			"cost_bits": 50,
+			"description": "Randomly hurt yourself, heal, or blast the enemy.",
+			"tags": ["variance", "special"],
+			"effects": [
+				{"trigger": "on_play", "operation": "custom", "target": "any", "params": {"id": "roulette", "self_damage": 12, "heal": 18, "enemy_damage": 30}}
 			]
 		}
 	]

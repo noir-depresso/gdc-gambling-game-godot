@@ -1,6 +1,9 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=5 format=3]
 
-[ext_resource type="Script" path="res://ScriptsCs/CombatScreen.cs" id="1_5ul6t"]
+[ext_resource type="Script" path="res://ScriptsCs/CombatScreen.cs" id="1_combat"]
+[ext_resource type="Texture2D" path="res://resources transparent/ui_bg_main.png" id="2_bg"]
+[ext_resource type="Texture2D" path="res://resources transparent/enemy.png" id="3_enemy"]
+[ext_resource type="Texture2D" path="res://resources transparent/static green.png" id="4_static"]
 
 [node name="CombatScreen" type="Control"]
 layout_mode = 3
@@ -9,4 +12,465 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_5ul6t")
+script = ExtResource("1_combat")
+
+[node name="Background" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="GridBackground" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0.12)
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="StaticWash" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0.035)
+texture = ExtResource("4_static")
+expand_mode = 1
+stretch_mode = 1
+
+[node name="ScreenMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 4.0
+offset_right = -16.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Root" type="VBoxContainer" parent="ScreenMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="HeaderRow" type="HBoxContainer" parent="ScreenMargin/Root"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EnemyBanner" type="PanelContainer" parent="ScreenMargin/Root/HeaderRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 72)
+size_flags_horizontal = 3
+
+[node name="EnemyBannerMargin" type="MarginContainer" parent="ScreenMargin/Root/HeaderRow/EnemyBanner"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 6
+
+[node name="EnemyBannerBody" type="HBoxContainer" parent="ScreenMargin/Root/HeaderRow/EnemyBanner/EnemyBannerMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="EnemyText" type="VBoxContainer" parent="ScreenMargin/Root/HeaderRow/EnemyBanner/EnemyBannerMargin/EnemyBannerBody"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="EnemyLabel" type="Label" parent="ScreenMargin/Root/HeaderRow/EnemyBanner/EnemyBannerMargin/EnemyBannerBody/EnemyText"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Enemy Encounter"
+
+[node name="EnemyNameLabel" type="Label" parent="ScreenMargin/Root/HeaderRow/EnemyBanner/EnemyBannerMargin/EnemyBannerBody/EnemyText"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+text = "Enemy"
+
+[node name="EnemySubLabel" type="Label" parent="ScreenMargin/Root/HeaderRow/EnemyBanner/EnemyBannerMargin/EnemyBannerBody/EnemyText"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Your turn. Spend bits and shape the round."
+autowrap_mode = 3
+
+[node name="EnemyPortrait" type="TextureRect" parent="ScreenMargin/Root/HeaderRow/EnemyBanner/EnemyBannerMargin/EnemyBannerBody"]
+layout_mode = 2
+custom_minimum_size = Vector2(70, 58)
+mouse_filter = 2
+texture = ExtResource("3_enemy")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HeaderButtons" type="HBoxContainer" parent="ScreenMargin/Root/HeaderRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(236, 38)
+theme_override_constants/separation = 6
+
+[node name="ViewDeckButton" type="Button" parent="ScreenMargin/Root/HeaderRow/HeaderButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(116, 38)
+text = "Inspect Deck"
+
+[node name="MenuButton" type="Button" parent="ScreenMargin/Root/HeaderRow/HeaderButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(116, 38)
+text = "Menu"
+
+[node name="PrimaryStats" type="HBoxContainer" parent="ScreenMargin/Root"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PlayerHpTile" type="PanelContainer" parent="ScreenMargin/Root/PrimaryStats"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 54)
+size_flags_horizontal = 3
+
+[node name="PlayerHpBody" type="VBoxContainer" parent="ScreenMargin/Root/PrimaryStats/PlayerHpTile"]
+layout_mode = 2
+alignment = 1
+
+[node name="PlayerHpTitle" type="Label" parent="ScreenMargin/Root/PrimaryStats/PlayerHpTile/PlayerHpBody"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "PLAYER HP"
+horizontal_alignment = 1
+
+[node name="PlayerHpValue" type="Label" parent="ScreenMargin/Root/PrimaryStats/PlayerHpTile/PlayerHpBody"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "-"
+horizontal_alignment = 1
+
+[node name="BitsTile" type="PanelContainer" parent="ScreenMargin/Root/PrimaryStats"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 54)
+size_flags_horizontal = 3
+
+[node name="BitsBody" type="VBoxContainer" parent="ScreenMargin/Root/PrimaryStats/BitsTile"]
+layout_mode = 2
+alignment = 1
+
+[node name="BitsTitle" type="Label" parent="ScreenMargin/Root/PrimaryStats/BitsTile/BitsBody"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "BITS"
+horizontal_alignment = 1
+
+[node name="BitsValue" type="Label" parent="ScreenMargin/Root/PrimaryStats/BitsTile/BitsBody"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "-"
+horizontal_alignment = 1
+
+[node name="EnemyHpTile" type="PanelContainer" parent="ScreenMargin/Root/PrimaryStats"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 54)
+size_flags_horizontal = 3
+
+[node name="EnemyHpBody" type="VBoxContainer" parent="ScreenMargin/Root/PrimaryStats/EnemyHpTile"]
+layout_mode = 2
+alignment = 1
+
+[node name="EnemyHpTitle" type="Label" parent="ScreenMargin/Root/PrimaryStats/EnemyHpTile/EnemyHpBody"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "ENEMY HP"
+horizontal_alignment = 1
+
+[node name="EnemyHpValue" type="Label" parent="ScreenMargin/Root/PrimaryStats/EnemyHpTile/EnemyHpBody"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "-"
+horizontal_alignment = 1
+
+[node name="RoundTile" type="PanelContainer" parent="ScreenMargin/Root/PrimaryStats"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 54)
+size_flags_horizontal = 3
+
+[node name="RoundBody" type="VBoxContainer" parent="ScreenMargin/Root/PrimaryStats/RoundTile"]
+layout_mode = 2
+alignment = 1
+
+[node name="RoundTitle" type="Label" parent="ScreenMargin/Root/PrimaryStats/RoundTile/RoundBody"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "ROUND"
+horizontal_alignment = 1
+
+[node name="RoundValue" type="Label" parent="ScreenMargin/Root/PrimaryStats/RoundTile/RoundBody"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "-"
+horizontal_alignment = 1
+
+[node name="InfoRow" type="HBoxContainer" parent="ScreenMargin/Root"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="IncomeValue" type="Label" parent="ScreenMargin/Root/InfoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Income: -"
+horizontal_alignment = 1
+
+[node name="DrawPileValue" type="Label" parent="ScreenMargin/Root/InfoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Draw: -"
+horizontal_alignment = 1
+
+[node name="DiscardPileValue" type="Label" parent="ScreenMargin/Root/InfoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Discard: -"
+horizontal_alignment = 1
+
+[node name="IntentValue" type="Label" parent="ScreenMargin/Root/InfoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Intent: -"
+horizontal_alignment = 1
+
+[node name="EncounterValue" type="Label" parent="ScreenMargin/Root/InfoRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Encounter: -"
+horizontal_alignment = 1
+
+[node name="GuideEconomyRow" type="HBoxContainer" parent="ScreenMargin/Root"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TurnGuide" type="PanelContainer" parent="ScreenMargin/Root/GuideEconomyRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 48)
+size_flags_horizontal = 3
+
+[node name="TurnGuideBody" type="VBoxContainer" parent="ScreenMargin/Root/GuideEconomyRow/TurnGuide"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="TurnHintLabel" type="Label" parent="ScreenMargin/Root/GuideEconomyRow/TurnGuide/TurnGuideBody"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "Pick cards from the hand row, then end the turn when you are done."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TurnGuideSubtle" type="Label" parent="ScreenMargin/Root/GuideEconomyRow/TurnGuide/TurnGuideBody"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Second-selection cards: click source, then sacrifice target."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="EconomyPanel" type="PanelContainer" parent="ScreenMargin/Root/GuideEconomyRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(340, 48)
+size_flags_horizontal = 3
+
+[node name="EconomyBody" type="VBoxContainer" parent="ScreenMargin/Root/GuideEconomyRow/EconomyPanel"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="EconomyFormula" type="Label" parent="ScreenMargin/Root/GuideEconomyRow/EconomyPanel/EconomyBody"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Bits Economy: (B + A) x (1 + M + V)"
+
+[node name="EconomyRow" type="HBoxContainer" parent="ScreenMargin/Root/GuideEconomyRow/EconomyPanel/EconomyBody"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="EconomyBaseValue" type="Label" parent="ScreenMargin/Root/GuideEconomyRow/EconomyPanel/EconomyBody/EconomyRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "B -"
+horizontal_alignment = 1
+
+[node name="EconomyAddValue" type="Label" parent="ScreenMargin/Root/GuideEconomyRow/EconomyPanel/EconomyBody/EconomyRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "A -"
+horizontal_alignment = 1
+
+[node name="EconomyMultValue" type="Label" parent="ScreenMargin/Root/GuideEconomyRow/EconomyPanel/EconomyBody/EconomyRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "M -"
+horizontal_alignment = 1
+
+[node name="EconomyVolValue" type="Label" parent="ScreenMargin/Root/GuideEconomyRow/EconomyPanel/EconomyBody/EconomyRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "V -"
+horizontal_alignment = 1
+
+[node name="EconomyGainValue" type="Label" parent="ScreenMargin/Root/GuideEconomyRow/EconomyPanel/EconomyBody/EconomyRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Gain -"
+horizontal_alignment = 1
+
+[node name="EconomyCostValue" type="Label" parent="ScreenMargin/Root/GuideEconomyRow/EconomyPanel/EconomyBody/EconomyRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Cost -"
+horizontal_alignment = 1
+
+[node name="HandPanel" type="PanelContainer" parent="ScreenMargin/Root"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HandBody" type="VBoxContainer" parent="ScreenMargin/Root/HandPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="HandTitle" type="Label" parent="ScreenMargin/Root/HandPanel/HandBody"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Hand"
+
+[node name="HandHint" type="Label" parent="ScreenMargin/Root/HandPanel/HandBody"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Cards stay docked here. Scroll sideways if the hand gets wide."
+autowrap_mode = 3
+
+[node name="HandScroll" type="ScrollContainer" parent="ScreenMargin/Root/HandPanel/HandBody"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 124)
+size_flags_vertical = 3
+horizontal_scroll_mode = 2
+vertical_scroll_mode = 0
+
+[node name="HandRow" type="HBoxContainer" parent="ScreenMargin/Root/HandPanel/HandBody/HandScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BottomBar" type="HBoxContainer" parent="ScreenMargin/Root"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="LogPanel" type="PanelContainer" parent="ScreenMargin/Root/BottomBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(420, 58)
+size_flags_horizontal = 3
+
+[node name="LogBody" type="VBoxContainer" parent="ScreenMargin/Root/BottomBar/LogPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="LogTitle" type="Label" parent="ScreenMargin/Root/BottomBar/LogPanel/LogBody"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "Combat Log"
+
+[node name="LogOutput" type="RichTextLabel" parent="ScreenMargin/Root/BottomBar/LogPanel/LogBody"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 26)
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_active = true
+selection_enabled = true
+
+[node name="EndTurnButton" type="Button" parent="ScreenMargin/Root/BottomBar"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(108, 42)
+text = "End Turn"
+
+[node name="Overlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.86)
+
+[node name="OverlayPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -430.0
+offset_top = -300.0
+offset_right = 430.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="OverlayBody" type="VBoxContainer" parent="OverlayPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="OverlayHeader" type="HBoxContainer" parent="OverlayPanel/OverlayBody"]
+layout_mode = 2
+
+[node name="OverlayTitleLabel" type="Label" parent="OverlayPanel/OverlayBody/OverlayHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Menu"
+
+[node name="OverlayCloseButton" type="Button" parent="OverlayPanel/OverlayBody/OverlayHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(48, 42)
+text = "X"
+
+[node name="OverlayContent" type="VBoxContainer" parent="OverlayPanel/OverlayBody"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12

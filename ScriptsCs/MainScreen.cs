@@ -1,4 +1,6 @@
 #nullable enable
+using System;
+using System.Threading.Tasks;
 using Godot;
 
 namespace GodotGdc.V1;
@@ -40,6 +42,21 @@ public partial class MainScreen : Control
         Theme = UiStyles.GetTheme(UiStyles.BuildPalette(_session.AccentColor, _session.HackerMode));
         UiStyles.ApplyWindowScale(GetWindow(), _session.UiScale);
         ShowDeckBuilder();
+        _ = SaveViewportScreenshotAsync("startup");
+        if (FileAccess.FileExists("res://.codex/capture_combat.flag"))
+        {
+            _ = AutoOpenCombatForScreenshotAsync();
+        }
+    }
+
+    public override void _UnhandledInput(InputEvent @event)
+    {
+        if (@event is not InputEventKey { Pressed: true, Echo: false, Keycode: Key.F12 })
+        {
+            return;
+        }
+
+        _ = SaveViewportScreenshotAsync("manual");
     }
 
     private void ShowDeckBuilder()
@@ -60,6 +77,7 @@ public partial class MainScreen : Control
         screen.BackToDeckBuilderRequested += OnBackToDeckBuilderRequested;
         AddChild(screen);
         _activeScreen = screen;
+        _ = SaveViewportScreenshotAsync("combat");
     }
 
     private void ClearActiveScreen()
@@ -81,5 +99,39 @@ public partial class MainScreen : Control
     private void OnBackToDeckBuilderRequested()
     {
         ShowDeckBuilder();
+        _ = SaveViewportScreenshotAsync("deck_builder");
+    }
+
+    private async Task SaveViewportScreenshotAsync(string label)
+    {
+        // Wait a few frames so containers, textures, and runtime data have settled.
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+
+        var directory = ProjectSettings.GlobalizePath("res://screenshots");
+        DirAccess.MakeDirRecursiveAbsolute(directory);
+
+        var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        var path = $"{directory}/ui_{label}_{timestamp}.png";
+        var image = GetViewport().GetTexture().GetImage();
+        var error = image.SavePng(path);
+
+        if (error == Error.Ok)
+        {
+            GD.Print($"Saved UI screenshot: {path}");
+        }
+        else
+        {
+            GD.PushWarning($"Failed to save UI screenshot ({error}): {path}");
+        }
+    }
+
+    private async Task AutoOpenCombatForScreenshotAsync()
+    {
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+        await ToSignal(GetTree().CreateTimer(0.25), SceneTreeTimer.SignalName.Timeout);
+        OnStartCombatRequested();
     }
 }

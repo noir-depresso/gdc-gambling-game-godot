@@ -26,7 +26,11 @@ public partial class DeckBuilderScreen : Control
     private ColorRect _overlay = null!;
     private PanelContainer _overlayPanel = null!;
     private VBoxContainer _overlayBody = null!;
+    private Label _overlayTitleLabel = null!;
+    private VBoxContainer _overlayContent = null!;
+    private Button _overlayCloseButton = null!;
     private System.Action? _overlayCloseAction;
+    private bool _uiBound;
 
     public event System.Action? StartCombatRequested;
 
@@ -42,20 +46,67 @@ public partial class DeckBuilderScreen : Control
 
     private void RebuildScreen()
     {
-        foreach (var child in GetChildren())
-        {
-            child.QueueFree();
-        }
-
         _palette = UiStyles.BuildPalette(_session.AccentColor, _session.HackerMode);
         Theme = UiStyles.GetTheme(_palette);
         SetAnchorsPreset(LayoutPreset.FullRect);
-        BuildUi();
+        BindSceneUi();
         RefreshDeckSelector();
         RefreshPoolList();
         RefreshDeckList();
         RefreshDetailFromSelection();
         UpdateStatus("Ctrl/Shift click works for batch selection.");
+    }
+
+    private void BindSceneUi()
+    {
+        _background = GetNode<ColorRect>("%Background");
+        _deckSelector = GetNode<OptionButton>("%DeckSelector");
+        _deckNameEdit = GetNode<LineEdit>("%DeckNameEdit");
+        _searchEdit = GetNode<LineEdit>("%SearchEdit");
+        _deckCountLabel = GetNode<Label>("%DeckCountLabel");
+        _selectionHintLabel = GetNode<Label>("%SelectionHintLabel");
+        _poolList = GetNode<ItemList>("%PoolList");
+        _deckList = GetNode<ItemList>("%DeckList");
+        _detailLabel = GetNode<RichTextLabel>("%DetailLabel");
+        _enterCombatButton = GetNode<Button>("%EnterCombatButton");
+        _statusLabel = GetNode<Label>("%StatusLabel");
+        _overlay = GetNode<ColorRect>("%Overlay");
+        _overlayPanel = GetNode<PanelContainer>("%OverlayPanel");
+        _overlayTitleLabel = GetNode<Label>("%OverlayTitleLabel");
+        _overlayContent = GetNode<VBoxContainer>("%OverlayContent");
+        _overlayCloseButton = GetNode<Button>("%OverlayCloseButton");
+
+        _background.Color = Colors.Black;
+        _overlay.Color = new Color(0, 0, 0, 0.86f);
+        _overlay.Visible = false;
+        _overlayPanel.Visible = false;
+
+        if (_uiBound)
+        {
+            return;
+        }
+
+        _uiBound = true;
+
+        GetNode<Button>("%MenuButton").Pressed += ShowMainMenu;
+        _deckSelector.ItemSelected += OnDeckSelected;
+        _deckNameEdit.TextSubmitted += text => _session.CurrentDeck.Name = text.Trim();
+        GetNode<Button>("%NewDeckButton").Pressed += OnNewDeckPressed;
+        GetNode<Button>("%SaveDeckButton").Pressed += OnSaveDeckPressed;
+        _enterCombatButton.Pressed += OnEnterCombatPressed;
+        _searchEdit.TextChanged += _ => RefreshPoolList();
+
+        _poolList.ItemSelected += _ => RefreshDetailFromSelection();
+        _poolList.ItemActivated += OnPoolItemActivated;
+        GetNode<Button>("%AddSelectedButton").Pressed += () => AddSelectedCards(1);
+        GetNode<Button>("%AddFourButton").Pressed += () => AddSelectedCards(4);
+
+        _deckList.ItemSelected += _ => RefreshDetailFromSelection();
+        _deckList.ItemActivated += OnDeckItemActivated;
+        GetNode<Button>("%RemoveSelectedButton").Pressed += OnRemoveSelectedPressed;
+        GetNode<Button>("%SortDeckButton").Pressed += OnSortDeckPressed;
+        GetNode<Button>("%ClearDeckButton").Pressed += OnClearDeckPressed;
+        _overlayCloseButton.Pressed += HandleOverlayClose;
     }
 
     private void BuildUi()
@@ -573,20 +624,13 @@ public partial class DeckBuilderScreen : Control
     private void ShowOverlay(string title, Control content, System.Action? onClose)
     {
         _overlayCloseAction = onClose;
-        foreach (var child in _overlayBody.GetChildren())
+        foreach (var child in _overlayContent.GetChildren())
         {
             child.QueueFree();
         }
 
-        var header = new HBoxContainer();
-        header.AddThemeConstantOverride("separation", 10);
-        header.AddChild(UiStyles.MakeHeading(title, 28, _palette));
-        header.AddChild(new Control { SizeFlagsHorizontal = SizeFlags.ExpandFill });
-        var closeX = new Button { Text = "X" };
-        closeX.Pressed += HandleOverlayClose;
-        header.AddChild(closeX);
-        _overlayBody.AddChild(header);
-        _overlayBody.AddChild(content);
+        _overlayTitleLabel.Text = title;
+        _overlayContent.AddChild(content);
 
         _overlay.Visible = true;
         _overlayPanel.Visible = true;

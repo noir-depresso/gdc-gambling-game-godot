@@ -162,10 +162,28 @@ public sealed class CombatSnapshot
     public string DeckName { get; init; } = "No Deck";
     public string EnemyName { get; init; } = "No Enemy";
     public string LastEnemyAction { get; init; } = "None";
+    public string EnemyIntentLabel { get; init; } = "Unknown";
+    public string EnemyIntentDescription { get; init; } = "";
     public int DrawPileCount { get; init; }
     public int DiscardPileCount { get; init; }
     public EconomyView Economy { get; init; } = new();
     public List<HandCardView> Hand { get; init; } = new();
+}
+
+public enum RunRewardKind
+{
+    BitsBonus,
+    IncomeBonus,
+    CardDraft
+}
+
+public sealed class RunRewardOption
+{
+    public RunRewardKind Kind { get; init; }
+    public string Title { get; init; } = "";
+    public string Description { get; init; } = "";
+    public int Amount { get; init; }
+    public string CardId { get; init; } = "";
 }
 
 public static class V1Json

@@ -15,6 +15,7 @@ public sealed class CombatController
         public float Amount { get; init; }
         public int Damage { get; init; }
         public int Heal { get; init; }
+        public int Count { get; init; }
     }
 
     private readonly RandomNumberGenerator _rng = new();
@@ -27,6 +28,7 @@ public sealed class CombatController
     private CombatRulesResource? _rules;
     private DeckDefinition? _activeDeck;
     private EnemyDefinition? _activeEnemy;
+    private EnemyActionDefinition? _previewEnemyAction;
 
     private bool _combatActive;
     private bool _playerTurnActive;
@@ -36,7 +38,10 @@ public sealed class CombatController
     private int _playerBits;
     private int _lastIncomeGained;
     private int _currentTurnIncome;
+    private int _runStartingBitsBonus;
+    private int _runBaseIncomeBonus;
     private string _lastEnemyActionLabel = "None";
+    private string _lastEnemyActionId = "";
 
     private float _economyAdd;
     private int _bankStacks;
@@ -77,6 +82,24 @@ public sealed class CombatController
     public void SetActiveDeck(DeckDefinition deck)
     {
         _activeDeck = deck.Copy();
+        EmitSnapshot();
+    }
+
+    public void SetActiveEnemy(string enemyId)
+    {
+        if (_content == null)
+        {
+            return;
+        }
+
+        _activeEnemy = _content.GetEnemy(enemyId);
+        EmitSnapshot();
+    }
+
+    public void ConfigureRunBonuses(int startingBitsBonus, int baseIncomeBonus)
+    {
+        _runStartingBitsBonus = startingBitsBonus;
+        _runBaseIncomeBonus = baseIncomeBonus;
         EmitSnapshot();
     }
 
@@ -125,9 +148,9 @@ public sealed class CombatController
             return;
         }
 
-        if (!_activeDeck.IsValid(32))
+        if (_activeDeck.CardIds.Count < 32)
         {
-            Log("Deck must contain exactly 32 cards before combat starts.");
+            Log("Deck must contain at least 32 cards before combat starts.");
             return;
         }
 
@@ -141,7 +164,7 @@ public sealed class CombatController
         _drawPile.AddRange(_activeDeck.CardIds);
         Shuffle(_drawPile);
         DrawCards(6);
-        _playerBits = _rules.StartingBits;
+        _playerBits = _rules.StartingBits + _runStartingBitsBonus;
         _playerHp = _rules.PlayerStartingHp;
         _enemyHp = _activeEnemy.MaxHealth > 0 ? _activeEnemy.MaxHealth : _rules.EnemyStartingHp;
         _combatActive = true;
@@ -263,6 +286,7 @@ public sealed class CombatController
         ResolveTimedEffects("start_player_turn");
         _currentTurnIncome = GainBitsIncome();
         DrawCards(_rules.CardsDrawnPerRound);
+        _previewEnemyAction = ChooseEnemyAction();
         Log($"Round {_roundNumber} starts. Gained {_currentTurnIncome} bits.");
         EmitSnapshot();
     }
@@ -275,7 +299,7 @@ public sealed class CombatController
             return;
         }
 
-        var action = ChooseEnemyAction();
+        var action = _previewEnemyAction ?? ChooseEnemyAction();
         if (action == null)
         {
             Log($"{_activeEnemy.Name} hesitates.");
@@ -284,7 +308,9 @@ public sealed class CombatController
             return;
         }
 
+        _lastEnemyActionId = action.Id;
         _lastEnemyActionLabel = action.Label;
+        _previewEnemyAction = null;
         Log($"{_activeEnemy.Name} uses {action.Label}.");
         foreach (var effect in action.Effects)
         {
@@ -311,6 +337,8 @@ public sealed class CombatController
         _lastIncomeGained = 0;
         _currentTurnIncome = 0;
         _lastEnemyActionLabel = "None";
+        _lastEnemyActionId = "";
+        _previewEnemyAction = null;
 
         _drawPile.Clear();
         _hand.Clear();
@@ -373,7 +401,7 @@ public sealed class CombatController
             stockBonus += _rng.RandfRange(_rules.StockVolatilityMin, _rules.StockVolatilityMax);
         }
 
-        var addValue = _rules.BasicIncome + _economyAdd + _tempIncomeAdd;
+        var addValue = _rules.BasicIncome + _runBaseIncomeBonus + _economyAdd + _tempIncomeAdd;
         var multValue = bankBonus + sellBonus + _tempIncomeMult;
         var volatilityValue = stockBonus + _tempIncomeVol;
         var income = Mathf.Max(0, Mathf.RoundToInt(addValue * (1.0f + multValue + volatilityValue)));
@@ -391,6 +419,9 @@ public sealed class CombatController
                 return false;
             case "heal":
                 HealPlayer(V1Json.GetInt(effect.Params, "amount"));
+                return false;
+            case "draw":
+                DrawCards(V1Json.GetInt(effect.Params, "amount", 1));
                 return false;
             case "modify_bits_income_mult":
             {
@@ -484,13 +515,55 @@ public sealed class CombatController
             case "coin_flip":
                 ApplyDamageToEnemy(V1Json.GetFloat(parameters, "amount", 20.0f) * (_rng.Randf() >= 0.5f ? 2.0f : 0.5f));
                 return false;
+            case "raan":
+                ScheduleEffect("start_player_turn", _rng.RandiRange(2, 3), "draw_cards", count: V1Json.GetInt(parameters, "amount", 1));
+                Log("Raan is circulating. Extra draw queued in a few turns.");
+                return false;
+            case "firewall":
+                ScheduleEffect("before_enemy_action", 1, "reflect_temp", amount: V1Json.GetFloat(parameters, "amount", 0.25f));
+                return false;
+            case "suture_kit":
+                HealPlayer(V1Json.GetInt(parameters, "heal", 25));
+                ScheduleEffect("before_enemy_action", 1, "incoming_reduction_temp", V1Json.GetFloat(parameters, "block", 0.95f));
+                return false;
+            case "release_files":
+                if (_rules != null && _playerHp <= Mathf.RoundToInt(_rules.PlayerStartingHp * V1Json.GetFloat(parameters, "hp_threshold", 0.2f)))
+                {
+                    ScheduleEffect("start_player_turn", 1, "player_damage_bonus_temp", V1Json.GetFloat(parameters, "amount", 1.0f));
+                    Log("Release the Files primes a desperate spike for next turn.");
+                }
+                else
+                {
+                    Log("Release the Files needs low health to trigger.");
+                }
+                return false;
+            case "roulette":
+            {
+                var outcome = _rng.RandiRange(0, 2);
+                if (outcome == 0)
+                {
+                    ApplyDamageToPlayer(V1Json.GetFloat(parameters, "self_damage", 12.0f));
+                    Log("Roulette backfires.");
+                }
+                else if (outcome == 1)
+                {
+                    HealPlayer(V1Json.GetInt(parameters, "heal", 18));
+                    Log("Roulette lands on recovery.");
+                }
+                else
+                {
+                    ApplyDamageToEnemy(V1Json.GetFloat(parameters, "enemy_damage", 30.0f));
+                    Log("Roulette lands on violence.");
+                }
+                return false;
+            }
             default:
                 Log($"Unhandled custom effect: {customId}");
                 return false;
         }
     }
 
-    private void ScheduleEffect(string eventName, int roundsUntilTrigger, string id, float amount = 0.0f, int damage = 0, int heal = 0)
+    private void ScheduleEffect(string eventName, int roundsUntilTrigger, string id, float amount = 0.0f, int damage = 0, int heal = 0, int count = 0)
     {
         _timedEffects.Add(new TimedEffect
         {
@@ -499,7 +572,8 @@ public sealed class CombatController
             Id = id,
             Amount = amount,
             Damage = damage,
-            Heal = heal
+            Heal = heal,
+            Count = count
         });
     }
 
@@ -550,6 +624,13 @@ public sealed class CombatController
                 break;
             case "incoming_reduction_temp":
                 _playerIncomingReductionTemp = Mathf.Max(_playerIncomingReductionTemp, effect.Amount);
+                break;
+            case "reflect_temp":
+                _playerReflectTemp = Mathf.Max(_playerReflectTemp, effect.Amount);
+                break;
+            case "draw_cards":
+                DrawCards(Mathf.Max(1, effect.Count));
+                Log($"Drew {Mathf.Max(1, effect.Count)} bonus card.");
                 break;
             case "trauma_team_check":
                 if (LastEnemyActionWillAttack())
@@ -669,6 +750,11 @@ public sealed class CombatController
 
         var weight = action.BaseWeight;
         var conditions = action.Conditions;
+        if (conditions.TryGetValue("avoid_repeat", out var avoidRepeat) && avoidRepeat.ValueKind == System.Text.Json.JsonValueKind.True && action.Id == _lastEnemyActionId)
+        {
+            weight *= 0.35f;
+        }
+
         if (conditions.TryGetValue("min_round", out var minRound) && _roundNumber < minRound.GetInt32())
         {
             return 0.0f;
@@ -687,7 +773,17 @@ public sealed class CombatController
             return 0.0f;
         }
 
+        if (conditions.TryGetValue("enemy_hp_above", out var enemyHpAbove) && enemyHpPct <= enemyHpAbove.GetSingle())
+        {
+            return 0.0f;
+        }
+
         if (conditions.TryGetValue("player_hp_below", out var playerHpBelow) && playerHpPct >= playerHpBelow.GetSingle())
+        {
+            return 0.0f;
+        }
+
+        if (conditions.TryGetValue("player_hp_above", out var playerHpAbove) && playerHpPct <= playerHpAbove.GetSingle())
         {
             return 0.0f;
         }
@@ -852,11 +948,13 @@ public sealed class CombatController
             DeckName = _activeDeck?.Name ?? "No Deck",
             EnemyName = _activeEnemy?.Name ?? "No Enemy",
             LastEnemyAction = _lastEnemyActionLabel,
+            EnemyIntentLabel = _previewEnemyAction?.Label ?? (_combatActive ? "Pending" : _lastEnemyActionLabel),
+            EnemyIntentDescription = _previewEnemyAction?.Description ?? "",
             DrawPileCount = _drawPile.Count,
             DiscardPileCount = _discardPile.Count,
             Economy = new EconomyView
             {
-                BaseIncome = _rules?.BasicIncome ?? 0,
+                BaseIncome = (_rules?.BasicIncome ?? 0) + _runBaseIncomeBonus,
                 FlatBonus = _economyAdd,
                 MultiplierBonus = (_bankStacks * 0.05f) + (_sellHighStacks * 0.25f),
                 VStacks = _stockStacks,

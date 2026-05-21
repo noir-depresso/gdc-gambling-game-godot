@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
-[ext_resource type="Script" path="res://ScriptsCs/DeckBuilderScreen.cs" id="1_r11jq"]
+[ext_resource type="Script" path="res://ScriptsCs/DeckBuilderScreen.cs" id="1_deck"]
+[ext_resource type="Texture2D" path="res://resources transparent/ui_bg_main.png" id="2_bg"]
 
 [node name="DeckBuilderScreen" type="Control"]
 layout_mode = 3
@@ -9,5 +10,340 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_r11jq")
+script = ExtResource("1_deck")
 
+[node name="Background" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="GridBackground" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0.18)
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="ScreenMargin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 14.0
+offset_right = -16.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Root" type="VBoxContainer" parent="ScreenMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="ScreenMargin/Root"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeadingBox" type="VBoxContainer" parent="ScreenMargin/Root/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="TitleLabel" type="Label" parent="ScreenMargin/Root/Header/HeadingBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "Deck Builder"
+
+[node name="SubtitleLabel" type="Label" parent="ScreenMargin/Root/Header/HeadingBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "Build a 32-card deck, inspect the pool, then enter combat."
+autowrap_mode = 3
+
+[node name="MenuButton" type="Button" parent="ScreenMargin/Root/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(118, 44)
+text = "Menu"
+
+[node name="Toolbar" type="PanelContainer" parent="ScreenMargin/Root"]
+layout_mode = 2
+
+[node name="ToolbarBody" type="VBoxContainer" parent="ScreenMargin/Root/Toolbar"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TopRow" type="HBoxContainer" parent="ScreenMargin/Root/Toolbar/ToolbarBody"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DeckSelector" type="OptionButton" parent="ScreenMargin/Root/Toolbar/ToolbarBody/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(210, 0)
+size_flags_horizontal = 3
+
+[node name="DeckNameEdit" type="LineEdit" parent="ScreenMargin/Root/Toolbar/ToolbarBody/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(220, 0)
+size_flags_horizontal = 3
+placeholder_text = "Deck Name"
+
+[node name="NewDeckButton" type="Button" parent="ScreenMargin/Root/Toolbar/ToolbarBody/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(108, 0)
+text = "New Deck"
+
+[node name="SaveDeckButton" type="Button" parent="ScreenMargin/Root/Toolbar/ToolbarBody/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(108, 0)
+text = "Save Deck"
+
+[node name="EnterCombatButton" type="Button" parent="ScreenMargin/Root/Toolbar/ToolbarBody/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(132, 0)
+text = "Enter Combat"
+
+[node name="UtilityRow" type="HBoxContainer" parent="ScreenMargin/Root/Toolbar/ToolbarBody"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SearchEdit" type="LineEdit" parent="ScreenMargin/Root/Toolbar/ToolbarBody/UtilityRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Search by name, type, or tag..."
+
+[node name="DeckCountLabel" type="Label" parent="ScreenMargin/Root/Toolbar/ToolbarBody/UtilityRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+text = "0 / 32"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ContentRow" type="HBoxContainer" parent="ScreenMargin/Root"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="CardPoolPanel" type="PanelContainer" parent="ScreenMargin/Root/ContentRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(330, 0)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CardPoolMargin" type="MarginContainer" parent="ScreenMargin/Root/ContentRow/CardPoolPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="CardPoolBody" type="VBoxContainer" parent="ScreenMargin/Root/ContentRow/CardPoolPanel/CardPoolMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="CardPoolTitle" type="Label" parent="ScreenMargin/Root/ContentRow/CardPoolPanel/CardPoolMargin/CardPoolBody"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Card Pool"
+
+[node name="SelectionHintLabel" type="Label" parent="ScreenMargin/Root/ContentRow/CardPoolPanel/CardPoolMargin/CardPoolBody"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Ctrl click toggles. Shift click selects ranges. Double-click adds one card."
+autowrap_mode = 3
+
+[node name="PoolList" type="ItemList" parent="ScreenMargin/Root/ContentRow/CardPoolPanel/CardPoolMargin/CardPoolBody"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+select_mode = 2
+allow_reselect = true
+allow_rmb_select = true
+
+[node name="PoolActions" type="HBoxContainer" parent="ScreenMargin/Root/ContentRow/CardPoolPanel/CardPoolMargin/CardPoolBody"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AddSelectedButton" type="Button" parent="ScreenMargin/Root/ContentRow/CardPoolPanel/CardPoolMargin/CardPoolBody/PoolActions"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Add Selected"
+
+[node name="AddFourButton" type="Button" parent="ScreenMargin/Root/ContentRow/CardPoolPanel/CardPoolMargin/CardPoolBody/PoolActions"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Add 4x"
+
+[node name="CurrentDeckPanel" type="PanelContainer" parent="ScreenMargin/Root/ContentRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(360, 0)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CurrentDeckMargin" type="MarginContainer" parent="ScreenMargin/Root/ContentRow/CurrentDeckPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="CurrentDeckBody" type="VBoxContainer" parent="ScreenMargin/Root/ContentRow/CurrentDeckPanel/CurrentDeckMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="CurrentDeckTitle" type="Label" parent="ScreenMargin/Root/ContentRow/CurrentDeckPanel/CurrentDeckMargin/CurrentDeckBody"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Current Deck"
+
+[node name="CurrentDeckHint" type="Label" parent="ScreenMargin/Root/ContentRow/CurrentDeckPanel/CurrentDeckMargin/CurrentDeckBody"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Each row is one copy. Multi-select batches to remove them."
+autowrap_mode = 3
+
+[node name="DeckList" type="ItemList" parent="ScreenMargin/Root/ContentRow/CurrentDeckPanel/CurrentDeckMargin/CurrentDeckBody"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+select_mode = 2
+allow_reselect = true
+allow_rmb_select = true
+
+[node name="DeckActions" type="HBoxContainer" parent="ScreenMargin/Root/ContentRow/CurrentDeckPanel/CurrentDeckMargin/CurrentDeckBody"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RemoveSelectedButton" type="Button" parent="ScreenMargin/Root/ContentRow/CurrentDeckPanel/CurrentDeckMargin/CurrentDeckBody/DeckActions"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Remove"
+
+[node name="SortDeckButton" type="Button" parent="ScreenMargin/Root/ContentRow/CurrentDeckPanel/CurrentDeckMargin/CurrentDeckBody/DeckActions"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Sort Cost"
+
+[node name="ClearDeckButton" type="Button" parent="ScreenMargin/Root/ContentRow/CurrentDeckPanel/CurrentDeckMargin/CurrentDeckBody/DeckActions"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Clear"
+
+[node name="CardDetailsPanel" type="PanelContainer" parent="ScreenMargin/Root/ContentRow"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 0)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CardDetailsMargin" type="MarginContainer" parent="ScreenMargin/Root/ContentRow/CardDetailsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="CardDetailsBody" type="VBoxContainer" parent="ScreenMargin/Root/ContentRow/CardDetailsPanel/CardDetailsMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="CardDetailsTitle" type="Label" parent="ScreenMargin/Root/ContentRow/CardDetailsPanel/CardDetailsMargin/CardDetailsBody"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Card Details"
+
+[node name="DetailLabel" type="RichTextLabel" parent="ScreenMargin/Root/ContentRow/CardDetailsPanel/CardDetailsMargin/CardDetailsBody"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_active = true
+
+[node name="StatusLabel" type="Label" parent="ScreenMargin/Root"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = ""
+autowrap_mode = 3
+
+[node name="Overlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.86)
+
+[node name="OverlayPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -410.0
+offset_top = -290.0
+offset_right = 410.0
+offset_bottom = 290.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+
+[node name="OverlayBody" type="VBoxContainer" parent="OverlayPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="OverlayHeader" type="HBoxContainer" parent="OverlayPanel/OverlayBody"]
+layout_mode = 2
+
+[node name="OverlayTitleLabel" type="Label" parent="OverlayPanel/OverlayBody/OverlayHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Menu"
+
+[node name="OverlayCloseButton" type="Button" parent="OverlayPanel/OverlayBody/OverlayHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(48, 42)
+text = "X"
+
+[node name="OverlayContent" type="VBoxContainer" parent="OverlayPanel/OverlayBody"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12

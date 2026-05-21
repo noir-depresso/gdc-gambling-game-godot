@@ -67,6 +67,142 @@
 					]
 				}
 			]
+		},
+		{
+			"id": "signal_ghost",
+			"name": "Signal Ghost",
+			"max_health": 95,
+			"actions": [
+				{
+					"id": "needle_ping",
+					"label": "Needle Ping",
+					"description": "A quick, repeatable jab.",
+					"base_weight": 4.0,
+					"conditions": {
+						"avoid_repeat": true
+					},
+					"effects": [
+						{"operation": "damage", "amount": 10}
+					]
+				},
+				{
+					"id": "overclock",
+					"label": "Overclock",
+					"description": "Boost the next hit and keep pressure on.",
+					"base_weight": 2.0,
+					"conditions": {
+						"min_round": 2,
+						"avoid_repeat": true
+					},
+					"effects": [
+						{"operation": "attack_buff", "amount": 0.2},
+						{"operation": "damage", "amount": 16}
+					]
+				},
+				{
+					"id": "signal_scramble",
+					"label": "Signal Scramble",
+					"description": "Brace while the player's bits spike.",
+					"base_weight": 1.8,
+					"conditions": {
+						"player_bits_above": 80,
+						"avoid_repeat": true
+					},
+					"effects": [
+						{"operation": "defend", "ratio": 0.4}
+					]
+				},
+				{
+					"id": "patch_routine",
+					"label": "Patch Routine",
+					"description": "Recover while the shell is still intact.",
+					"base_weight": 1.2,
+					"conditions": {
+						"enemy_hp_below": 0.45,
+						"weight_if_enemy_low": 1.5,
+						"avoid_repeat": true
+					},
+					"effects": [
+						{"operation": "heal", "amount": 12}
+					]
+				}
+			]
+		},
+		{
+			"id": "district_overseer",
+			"name": "District Overseer",
+			"max_health": 165,
+			"actions": [
+				{
+					"id": "command_burst",
+					"label": "Command Burst",
+					"description": "Reliable damage backed by coordination.",
+					"base_weight": 3.5,
+					"conditions": {
+						"avoid_repeat": true
+					},
+					"effects": [
+						{"operation": "damage", "amount": 16}
+					]
+				},
+				{
+					"id": "lockstep_barrage",
+					"label": "Lockstep Barrage",
+					"description": "A heavier strike that appears more often in longer fights.",
+					"base_weight": 2.0,
+					"conditions": {
+						"min_round": 2,
+						"weight_if_round_high": 1.8,
+						"round_threshold": 3,
+						"avoid_repeat": true
+					},
+					"effects": [
+						{"operation": "damage", "amount": 28}
+					]
+				},
+				{
+					"id": "fortify_grid",
+					"label": "Fortify Grid",
+					"description": "Raises a strong defense when the player is flush with bits.",
+					"base_weight": 2.2,
+					"conditions": {
+						"player_bits_above": 90,
+						"avoid_repeat": true
+					},
+					"effects": [
+						{"operation": "defend", "ratio": 0.65}
+					]
+				},
+				{
+					"id": "reboot_cycle",
+					"label": "Reboot Cycle",
+					"description": "Repairs damage once the shell starts to crack.",
+					"base_weight": 1.3,
+					"conditions": {
+						"enemy_hp_below": 0.5,
+						"weight_if_enemy_low": 2.5,
+						"avoid_repeat": true
+					},
+					"effects": [
+						{"operation": "heal", "amount": 16}
+					]
+				},
+				{
+					"id": "pressure_directive",
+					"label": "Pressure Directive",
+					"description": "Buff and strike to close out weakened players.",
+					"base_weight": 1.4,
+					"conditions": {
+						"player_hp_below": 0.45,
+						"weight_if_player_low": 2.0,
+						"avoid_repeat": true
+					},
+					"effects": [
+						{"operation": "attack_buff", "amount": 0.25},
+						{"operation": "damage", "amount": 18}
+					]
+				}
+			]
 		}
 	]
 }

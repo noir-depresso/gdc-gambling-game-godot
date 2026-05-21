@@ -1,0 +1,73 @@
+[gd_scene format=3]
+
+[node name="HandCardView" type="PanelContainer"]
+custom_minimum_size = Vector2(164, 124)
+layout_mode = 3
+anchors_preset = 0
+
+[node name="ContentMargin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 6
+
+[node name="Body" type="VBoxContainer" parent="ContentMargin"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 3
+
+[node name="TitleRow" type="HBoxContainer" parent="ContentMargin/Body"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TitleBox" type="VBoxContainer" parent="ContentMargin/Body/TitleRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+
+[node name="CardNameLabel" type="Label" parent="ContentMargin/Body/TitleRow/TitleBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Card Name"
+text_overrun_behavior = 3
+
+[node name="CardTypeLabel" type="Label" parent="ContentMargin/Body/TitleRow/TitleBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "TYPE"
+text_overrun_behavior = 3
+
+[node name="CostBadge" type="PanelContainer" parent="ContentMargin/Body/TitleRow"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(42, 28)
+
+[node name="CostLabel" type="Label" parent="ContentMargin/Body/TitleRow/CostBadge"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0b"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CardDescription" type="RichTextLabel" parent="ContentMargin/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 28)
+size_flags_vertical = 3
+bbcode_enabled = true
+fit_content = false
+scroll_active = true
+
+[node name="CardHintLabel" type="Label" parent="ContentMargin/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+text = "Ready to play now."
+text_overrun_behavior = 3
+
+[node name="PlayCardButton" type="Button" parent="ContentMargin/Body"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(0, 28)
+text = "Play Card"

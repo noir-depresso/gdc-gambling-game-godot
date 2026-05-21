@@ -8,3 +8,6 @@ obj/
 .vs/
 .vscode/
 .codex/
+documents/
+screenshots/
+*.csproj.old
