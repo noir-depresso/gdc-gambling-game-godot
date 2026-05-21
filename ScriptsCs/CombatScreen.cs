@@ -61,6 +61,7 @@ public partial class CombatScreen : Control
     private int _runVictories;
 
     public event System.Action? BackToDeckBuilderRequested;
+    public event System.Action? ReturnToTitleRequested;
 
     public void Initialize(AppSession session)
     {
@@ -480,7 +481,7 @@ public partial class CombatScreen : Control
         {
             _handCardScene ??= ResourceLoader.Load<PackedScene>("res://scenes/hand_card_view.tscn");
             var cardView = _handCardScene.Instantiate<Control>();
-            cardView.CustomMinimumSize = new Vector2(164, 124);
+            cardView.CustomMinimumSize = new Vector2(244, 300);
             _handRow.AddChild(cardView);
 
             if (cardView is PanelContainer cardPanel)
@@ -492,12 +493,12 @@ public partial class CombatScreen : Control
 
             var nameLabel = cardView.GetNode<Label>("%CardNameLabel");
             nameLabel.Text = card.Name;
-            nameLabel.AddThemeFontSizeOverride("font_size", 24);
+            nameLabel.AddThemeFontSizeOverride("font_size", 28);
             nameLabel.AddThemeColorOverride("font_color", _palette.TextStrong);
 
             var typeLabel = cardView.GetNode<Label>("%CardTypeLabel");
             typeLabel.Text = card.Type.ToUpperInvariant();
-            typeLabel.AddThemeFontSizeOverride("font_size", 13);
+            typeLabel.AddThemeFontSizeOverride("font_size", 18);
             typeLabel.AddThemeColorOverride("font_color", _palette.TextMuted);
 
             var costBadge = cardView.GetNode<PanelContainer>("%CostBadge");
@@ -508,16 +509,18 @@ public partial class CombatScreen : Control
             var costText = cardView.GetNode<Label>("%CostLabel");
             costText.Text = $"{card.Cost}b";
             costText.AddThemeFontOverride("font", UiStyles.GetMonoFont());
-            costText.AddThemeFontSizeOverride("font_size", 20);
+            costText.AddThemeFontSizeOverride("font_size", 22);
             costText.AddThemeColorOverride("font_color", _palette.TextStrong);
 
             var description = cardView.GetNode<RichTextLabel>("%CardDescription");
-            description.Text = $"[font_size=17]{card.Description}[/font_size]";
+            description.Visible = false;
+            description.Text = "";
 
             var hintLabel = cardView.GetNode<Label>("%CardHintLabel");
             hintLabel.Text = card.RequiresSecondary
                 ? "Needs another card from hand to resolve."
                 : card.Playable ? "Ready to play now." : "Not enough bits right now.";
+            hintLabel.Visible = false;
             hintLabel.AddThemeFontSizeOverride("font_size", 13);
             hintLabel.AddThemeColorOverride("font_color", _palette.TextMuted);
 
@@ -641,6 +644,14 @@ public partial class CombatScreen : Control
             BackToDeckBuilderRequested?.Invoke();
         };
         actionRow.AddChild(backButton);
+
+        var titleButton = new Button { Text = "Title Screen" };
+        titleButton.Pressed += () =>
+        {
+            HideOverlay();
+            ReturnToTitleRequested?.Invoke();
+        };
+        actionRow.AddChild(titleButton);
 
         var closeButton = UiStyles.MakeAccentButton("Resume", _palette, _palette.Accent);
         closeButton.Pressed += HideOverlay;

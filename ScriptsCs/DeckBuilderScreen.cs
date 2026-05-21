@@ -33,6 +33,7 @@ public partial class DeckBuilderScreen : Control
     private bool _uiBound;
 
     public event System.Action? StartCombatRequested;
+    public event System.Action? ReturnToTitleRequested;
 
     public void Initialize(AppSession session)
     {
@@ -322,7 +323,7 @@ public partial class DeckBuilderScreen : Control
                 }
             }
 
-            _poolList.AddItem($"{card.Name}   |   {card.CostBits}b   |   {card.Type}");
+            _poolList.AddItem($"{Shorten(card.Name, 24),-24} {card.CostBits,3}b  {ShortType(card.Type)}");
             _poolList.SetItemMetadata(_poolList.ItemCount - 1, card.Id);
         }
     }
@@ -338,7 +339,7 @@ public partial class DeckBuilderScreen : Control
                 continue;
             }
 
-            _deckList.AddItem($"{i + 1:00}. {card.Name}   |   {card.CostBits}b   |   {card.Type}");
+            _deckList.AddItem($"{i + 1:00} {Shorten(card.Name, 12),-12} {card.CostBits,3}b");
             _deckList.SetItemMetadata(_deckList.ItemCount - 1, i);
         }
 
@@ -351,6 +352,27 @@ public partial class DeckBuilderScreen : Control
         _deckCountLabel.Text = $"{count} / 32";
         _deckCountLabel.AddThemeColorOverride("font_color", count == 32 ? _palette.Highlight : _palette.TextStrong);
         _enterCombatButton.Disabled = count != 32;
+    }
+
+    private static string Shorten(string value, int maxLength)
+    {
+        if (value.Length <= maxLength)
+        {
+            return value;
+        }
+
+        return value[..System.Math.Max(0, maxLength - 1)] + "…";
+    }
+
+    private static string ShortType(string value)
+    {
+        return value.ToLowerInvariant() switch
+        {
+            "investment" => "INV",
+            "medicate" => "MED",
+            "bruiser" => "BRU",
+            _ => Shorten(value.ToUpperInvariant(), 3)
+        };
     }
 
     private void RefreshDetailFromSelection()
@@ -580,6 +602,14 @@ public partial class DeckBuilderScreen : Control
             ShowMainMenu();
         };
         body.AddChild(hackerButton);
+
+        var titleButton = new Button { Text = "Return To Title Screen" };
+        titleButton.Pressed += () =>
+        {
+            HideOverlay();
+            ReturnToTitleRequested?.Invoke();
+        };
+        body.AddChild(titleButton);
 
         var closeButton = UiStyles.MakeAccentButton("Resume", _palette, _palette.Accent);
         closeButton.Pressed += HideOverlay;

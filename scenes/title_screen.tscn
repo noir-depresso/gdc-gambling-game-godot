@@ -1,0 +1,390 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://ScriptsCs/TitleScreen.cs" id="1_title"]
+[ext_resource type="Texture2D" path="res://resources transparent/ui_bg_main.png" id="2_bg"]
+[ext_resource type="Texture2D" path="res://resources transparent/green button.png" id="3_green"]
+[ext_resource type="Texture2D" path="res://resources transparent/red button.png" id="4_red"]
+[ext_resource type="Texture2D" path="res://resources transparent/rectangle template.png" id="5_frame"]
+
+[node name="TitleScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_title")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="GridSketch" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0.4)
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="TitlePad" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 64.0
+offset_top = 56.0
+offset_right = 960.0
+offset_bottom = 300.0
+color = Color(0, 0, 0, 0.68)
+
+[node name="AsciiTitleLabel" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 92.0
+offset_top = 78.0
+offset_right = 930.0
+offset_bottom = 260.0
+theme_override_font_sizes/font_size = 30
+text = "  ____ ____   ____   ____  _____ __  __  ___
+ / ___|  _ \\ / ___| |  _ \\| ____|  \\/  |/ _ \\
+| |  _| | | | |     | | | |  _| | |\\/| | | | |
+| |_| | |_| | |___  | |_| | |___| |  | | |_| |
+ \\____|____/ \\____| |____/|_____|_|  |_|\\___/"
+
+[node name="SubtitleLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 98.0
+offset_top = 252.0
+offset_right = 900.0
+offset_bottom = 286.0
+theme_override_font_sizes/font_size = 20
+text = "rough sketch interface / card combat prototype"
+
+[node name="MenuFrame" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 1040.0
+offset_top = 70.0
+offset_right = 1440.0
+offset_bottom = 722.0
+mouse_filter = 2
+modulate = Color(1, 1, 1, 0.82)
+texture = ExtResource("5_frame")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ButtonPad" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 1090.0
+offset_top = 132.0
+offset_right = 1390.0
+offset_bottom = 660.0
+color = Color(0, 0, 0, 0.58)
+
+[node name="StartPlate" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 1120.0
+offset_top = 154.0
+offset_right = 1360.0
+offset_bottom = 222.0
+mouse_filter = 2
+texture = ExtResource("3_green")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StartGameButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1142.0
+offset_top = 168.0
+offset_right = 1338.0
+offset_bottom = 208.0
+theme_override_font_sizes/font_size = 20
+flat = true
+text = "Start Game"
+
+[node name="DeckPlate" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 1120.0
+offset_top = 238.0
+offset_right = 1360.0
+offset_bottom = 306.0
+mouse_filter = 2
+texture = ExtResource("3_green")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="DeckBuilderButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1142.0
+offset_top = 252.0
+offset_right = 1338.0
+offset_bottom = 292.0
+theme_override_font_sizes/font_size = 20
+flat = true
+text = "Deck Builder"
+
+[node name="AchievementsPlate" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 1120.0
+offset_top = 322.0
+offset_right = 1360.0
+offset_bottom = 390.0
+mouse_filter = 2
+texture = ExtResource("3_green")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AchievementsButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1142.0
+offset_top = 336.0
+offset_right = 1338.0
+offset_bottom = 376.0
+theme_override_font_sizes/font_size = 20
+flat = true
+text = "Achievements"
+
+[node name="SettingsPlate" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 1120.0
+offset_top = 406.0
+offset_right = 1360.0
+offset_bottom = 474.0
+mouse_filter = 2
+texture = ExtResource("3_green")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SettingsButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1142.0
+offset_top = 420.0
+offset_right = 1338.0
+offset_bottom = 460.0
+theme_override_font_sizes/font_size = 20
+flat = true
+text = "Settings"
+
+[node name="InformationPlate" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 1120.0
+offset_top = 490.0
+offset_right = 1360.0
+offset_bottom = 558.0
+mouse_filter = 2
+texture = ExtResource("3_green")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="InformationButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1142.0
+offset_top = 504.0
+offset_right = 1338.0
+offset_bottom = 544.0
+theme_override_font_sizes/font_size = 20
+flat = true
+text = "Information"
+
+[node name="QuitPlate" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 1120.0
+offset_top = 584.0
+offset_right = 1360.0
+offset_bottom = 652.0
+mouse_filter = 2
+texture = ExtResource("4_red")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="QuitButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 1142.0
+offset_top = 598.0
+offset_right = 1338.0
+offset_bottom = 638.0
+theme_override_font_sizes/font_size = 20
+flat = true
+text = "Quit Game"
+
+[node name="Pages" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="AchievementsPage" type="Control" parent="Pages"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="AchievementsScrim" type="ColorRect" parent="Pages/AchievementsPage"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.78)
+
+[node name="AchievementsFrame" type="TextureRect" parent="Pages/AchievementsPage"]
+layout_mode = 0
+offset_left = 360.0
+offset_top = 120.0
+offset_right = 1140.0
+offset_bottom = 680.0
+texture = ExtResource("5_frame")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AchievementsText" type="RichTextLabel" parent="Pages/AchievementsPage"]
+layout_mode = 0
+offset_left = 430.0
+offset_top = 176.0
+offset_right = 1070.0
+offset_bottom = 560.0
+theme_override_font_sizes/normal_font_size = 22
+bbcode_enabled = true
+text = "[font_size=34][b]ACHIEVEMENTS[/b][/font_size]
+
+[b]First Compile[/b] - Build the prototype.
+[b]Full Deck[/b] - Make a 32-card deck.
+[b]Street Clear[/b] - Beat the Street Enforcer.
+[b]Bit Storm[/b] - Reach 150+ bits in combat.
+
+More achievements can be wired to save data later."
+
+[node name="AchievementsCloseButton" type="Button" parent="Pages/AchievementsPage" groups=["title_page_close"]]
+layout_mode = 0
+offset_left = 640.0
+offset_top = 588.0
+offset_right = 860.0
+offset_bottom = 638.0
+text = "Title Menu"
+
+[node name="InformationPage" type="Control" parent="Pages"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="InformationScrim" type="ColorRect" parent="Pages/InformationPage"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.78)
+
+[node name="InformationFrame" type="TextureRect" parent="Pages/InformationPage"]
+layout_mode = 0
+offset_left = 330.0
+offset_top = 100.0
+offset_right = 1170.0
+offset_bottom = 700.0
+texture = ExtResource("5_frame")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="InformationText" type="RichTextLabel" parent="Pages/InformationPage"]
+layout_mode = 0
+offset_left = 410.0
+offset_top = 164.0
+offset_right = 1090.0
+offset_bottom = 570.0
+theme_override_font_sizes/normal_font_size = 22
+bbcode_enabled = true
+text = "[font_size=34][b]INFORMATION[/b][/font_size]
+
+GDC DEMO is a rough neon-sketch card-combat prototype.
+
+Build a 32-card deck, spend bits to play cards, and survive encounter rounds. The UI is intentionally built from editable Godot scene nodes so it can be moved and tuned in the editor."
+
+[node name="InformationCloseButton" type="Button" parent="Pages/InformationPage" groups=["title_page_close"]]
+layout_mode = 0
+offset_left = 640.0
+offset_top = 606.0
+offset_right = 860.0
+offset_bottom = 656.0
+text = "Title Menu"
+
+[node name="SettingsPage" type="Control" parent="Pages"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="SettingsScrim" type="ColorRect" parent="Pages/SettingsPage"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.78)
+
+[node name="SettingsFrame" type="TextureRect" parent="Pages/SettingsPage"]
+layout_mode = 0
+offset_left = 400.0
+offset_top = 150.0
+offset_right = 1100.0
+offset_bottom = 650.0
+texture = ExtResource("5_frame")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="SettingsText" type="RichTextLabel" parent="Pages/SettingsPage"]
+layout_mode = 0
+offset_left = 475.0
+offset_top = 220.0
+offset_right = 1025.0
+offset_bottom = 500.0
+theme_override_font_sizes/normal_font_size = 22
+bbcode_enabled = true
+text = "[font_size=34][b]SETTINGS[/b][/font_size]
+
+Settings placeholder.
+
+Future options:
+- UI scale
+- Accent color
+- Hacker mode
+- Audio volume"
+
+[node name="SettingsCloseButton" type="Button" parent="Pages/SettingsPage" groups=["title_page_close"]]
+layout_mode = 0
+offset_left = 640.0
+offset_top = 548.0
+offset_right = 860.0
+offset_bottom = 598.0
+text = "Title Menu"

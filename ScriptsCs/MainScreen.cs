@@ -7,6 +7,7 @@ namespace GodotGdc.V1;
 
 public partial class MainScreen : Control
 {
+    private readonly PackedScene _titleScene = ResourceLoader.Load<PackedScene>("res://scenes/title_screen.tscn");
     private readonly PackedScene _deckBuilderScene = ResourceLoader.Load<PackedScene>("res://scenes/deck_builder_screen.tscn");
     private readonly PackedScene _combatScene = ResourceLoader.Load<PackedScene>("res://scenes/combat_screen.tscn");
 
@@ -41,7 +42,7 @@ public partial class MainScreen : Control
 
         Theme = UiStyles.GetTheme(UiStyles.BuildPalette(_session.AccentColor, _session.HackerMode));
         UiStyles.ApplyWindowScale(GetWindow(), _session.UiScale);
-        ShowDeckBuilder();
+        ShowTitle();
         _ = SaveViewportScreenshotAsync("startup");
         if (FileAccess.FileExists("res://.codex/capture_combat.flag"))
         {
@@ -65,6 +66,17 @@ public partial class MainScreen : Control
         var screen = _deckBuilderScene.Instantiate<DeckBuilderScreen>();
         screen.Initialize(_session);
         screen.StartCombatRequested += OnStartCombatRequested;
+        screen.ReturnToTitleRequested += ShowTitle;
+        AddChild(screen);
+        _activeScreen = screen;
+    }
+
+    private void ShowTitle()
+    {
+        ClearActiveScreen();
+        var screen = _titleScene.Instantiate<TitleScreen>();
+        screen.StartGameRequested += OnStartCombatRequested;
+        screen.DeckBuilderRequested += ShowDeckBuilder;
         AddChild(screen);
         _activeScreen = screen;
     }
@@ -75,6 +87,7 @@ public partial class MainScreen : Control
         var screen = _combatScene.Instantiate<CombatScreen>();
         screen.Initialize(_session);
         screen.BackToDeckBuilderRequested += OnBackToDeckBuilderRequested;
+        screen.ReturnToTitleRequested += ShowTitle;
         AddChild(screen);
         _activeScreen = screen;
         _ = SaveViewportScreenshotAsync("combat");
